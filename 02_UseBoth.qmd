@@ -1,0 +1,172 @@
+---
+title: "Recreate Some dplyr Shiz with Python and Polars"
+format: html
+---
+
+```{r}
+#| echo: false
+#| output: false
+
+library(tidyverse)
+```
+
+
+## 1. Basic Summarization without Generalization
+### r version
+```{r}
+table<-mtcars %>%
+    group_by(cyl) %>%
+    summarize(mpg.mean=mean(mpg))
+
+print(table)
+
+```
+
+### python version
+```{python}
+import polars as pl
+
+mtcars=pl.DataFrame(r.mtcars).lazy()
+
+q=(
+    mtcars
+    .group_by(pl.col("cyl"))
+    .agg(pl.col("mpg").mean().alias("mpg.mean"))
+)
+
+table=q.collect()
+
+print(table)
+
+```
+
+## 2. Basic Mutate with Grouping and without Generalization
+### r version
+```{r}
+table<-mtcars %>%
+    group_by(cyl) %>%
+    mutate(rel.mpg=mpg/mean(mpg))
+
+print(table)
+
+```
+
+### python version
+```{python}
+q=(
+    mtcars.join(
+        mtcars
+        .group_by("cyl")
+        .agg(pl.col("mpg").mean().alias("den"))
+        ,on="cyl"
+        ,how="left"
+    )
+    .with_columns((pl.col("mpg")/pl.col("den")).alias("rel.mpg"))
+    .drop("den")
+)
+
+table=q.collect()
+
+print(table)
+
+```
+
+## 3. Summarize Generalized by Variable Type with Across()
+### r version
+```{r}
+mtcars %>%
+    group_by(cyl,gear) %>%
+    summarize(
+        across(
+            .cols=where(is.double)
+            ,.fns=mean
+            ,.names="{.col}_mean"
+        )
+    )
+
+```
+
+### python version
+```{python}
+import polars.selectors as cs
+
+q=(
+    mtcars
+    .group_by("cyl","gear")
+    .agg(cs.float().mean().name.suffix("_mean"))
+)
+
+table=q.collect()
+
+print(table)
+
+```
+
+## 4. Function for n & pct by Grouping Variables
+### r version
+```{r}
+doit<-function(df,...){
+    df %>%
+        ungroup() %>%
+        mutate(N=n()) %>%
+        group_by(...) %>%
+        summarize(n=n(),pct=n()*100/mean(N),.groups="drop") %>%
+        mutate(cumn=cumsum(n),cumpct=cumsum(pct))
+}
+
+doit(mtcars,cyl)
+doit(mtcars,cyl,gear)
+
+```
+
+### python version
+```{python}
+def doit(df,*argv):
+    q=(
+        df
+        .with_columns(pl.len().alias("N"))
+        .group_by(*argv)
+        .agg(
+            pl.len().alias("n")
+            ,((pl.len()*100)/pl.col("N").mean()).alias("pct")
+        )
+        .sort(*argv)
+        .with_columns(
+            pl.col("n").cum_sum().alias("cumn")
+            ,pl.col("pct").cum_sum().alias("cumpct")
+        )
+    )
+    table=q.collect()
+    print(table)
+
+doit(mtcars,"cyl")
+doit(mtcars,"cyl","gear")
+
+```
+
+## 5. Iterate a Custom Function
+### r version
+```{r}
+parms<-list(
+    list(mtcars,mtcars)
+    ,"var1"=list(mtcars$cyl,mtcars$cyl)
+    ,"var2"=list(mtcars$gear,mtcars$am)
+)
+
+purrr::pmap(parms,doit)
+
+```
+
+### python version
+```{python}
+import itertools as it
+
+parms=zip(
+    [mtcars,mtcars]
+    ,['cyl','cyl']
+    ,['gear','am']
+)
+
+list(it.starmap(doit,parms))
+
+```
