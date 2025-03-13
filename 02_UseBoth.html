@@ -144,8 +144,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
 │ 8.0 ┆ 15.1      │
-│ 4.0 ┆ 26.663636 │
 │ 6.0 ┆ 19.742857 │
+│ 4.0 ┆ 26.663636 │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
@@ -313,14 +313,14 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 │ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
-│ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
 │ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
 │ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
 │ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
-│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
-│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
+│ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
 </div>
@@ -590,6 +590,101 @@ shape: (6, 6)
 │ 8.0 ┆ 1.0 ┆ 2   ┆ 6.25  ┆ 32   ┆ 100.0  │
 └─────┴─────┴─────┴───────┴──────┴────────┘
 [None, None]</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="conditional-recode" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-recode">6. Conditional Recode</h2>
+<section id="r-version-5" class="level3">
+<h3 class="anchored" data-anchor-id="r-version-5">r version</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">mpg.cat=</span><span class="fu">case_when</span>(</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>            mpg<span class="sc">&lt;</span><span class="dv">10</span><span class="sc">~</span><span class="st">"very bad"</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">15</span><span class="sc">~</span><span class="st">"bad"</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">20</span><span class="sc">~</span><span class="st">"okay"</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">25</span><span class="sc">~</span><span class="st">"good"</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>            ,<span class="cn">TRUE</span><span class="sc">~</span><span class="st">"great"</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(mpg))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb mpg.cat
+Toyota Corolla      33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1   great
+Fiat 128            32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1   great
+Honda Civic         30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2   great
+Lotus Europa        30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2   great
+Fiat X1-9           27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1   great
+Porsche 914-2       26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2   great
+Merc 240D           24.4   4 146.7  62 3.69 3.190 20.00  1  0    4    2    good
+Datsun 710          22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1    good
+Merc 230            22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2    good
+Toyota Corona       21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1    good
+Hornet 4 Drive      21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1    good
+Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2    good
+Mazda RX4           21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4    good
+Mazda RX4 Wag       21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4    good
+Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6    okay
+Merc 280            19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4    okay
+Pontiac Firebird    19.2   8 400.0 175 3.08 3.845 17.05  0  0    3    2    okay
+Hornet Sportabout   18.7   8 360.0 175 3.15 3.440 17.02  0  0    3    2    okay
+Valiant             18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1    okay
+Merc 280C           17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4    okay
+Merc 450SL          17.3   8 275.8 180 3.07 3.730 17.60  0  0    3    3    okay
+Merc 450SE          16.4   8 275.8 180 3.07 4.070 17.40  0  0    3    3    okay
+Ford Pantera L      15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4    okay
+Dodge Challenger    15.5   8 318.0 150 2.76 3.520 16.87  0  0    3    2    okay
+Merc 450SLC         15.2   8 275.8 180 3.07 3.780 18.00  0  0    3    3    okay
+AMC Javelin         15.2   8 304.0 150 3.15 3.435 17.30  0  0    3    2    okay
+Maserati Bora       15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8    okay
+Chrysler Imperial   14.7   8 440.0 230 3.23 5.345 17.42  0  0    3    4     bad
+Duster 360          14.3   8 360.0 245 3.21 3.570 15.84  0  0    3    4     bad
+Camaro Z28          13.3   8 350.0 245 3.73 3.840 15.41  0  0    3    4     bad
+Cadillac Fleetwood  10.4   8 472.0 205 2.93 5.250 17.98  0  0    3    4     bad
+Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad</code></pre>
+</div>
+</div>
+</section>
+<section id="python-version-5" class="level3">
+<h3 class="anchored" data-anchor-id="python-version-5">python version</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>        pl.when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">10</span>).then(pl.lit(<span class="st">"very bad"</span>))</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">15</span>).then(pl.lit(<span class="st">"bad"</span>))</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">20</span>).then(pl.lit(<span class="st">"okay"</span>))</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">25</span>).then(pl.lit(<span class="st">"good"</span>))</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>        .otherwise(pl.lit(<span class="st">"great"</span>))</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"mpg.cat"</span>)</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"mpg"</span>,descending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>q.collect()</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>shape: (32, 12)
+┌──────┬─────┬───────┬───────┬───┬─────┬──────┬──────┬─────────┐
+│ mpg  ┆ cyl ┆ disp  ┆ hp    ┆ … ┆ am  ┆ gear ┆ carb ┆ mpg.cat │
+│ ---  ┆ --- ┆ ---   ┆ ---   ┆   ┆ --- ┆ ---  ┆ ---  ┆ ---     │
+│ f64  ┆ f64 ┆ f64   ┆ f64   ┆   ┆ f64 ┆ f64  ┆ f64  ┆ str     │
+╞══════╪═════╪═══════╪═══════╪═══╪═════╪══════╪══════╪═════════╡
+│ 33.9 ┆ 4.0 ┆ 71.1  ┆ 65.0  ┆ … ┆ 1.0 ┆ 4.0  ┆ 1.0  ┆ great   │
+│ 32.4 ┆ 4.0 ┆ 78.7  ┆ 66.0  ┆ … ┆ 1.0 ┆ 4.0  ┆ 1.0  ┆ great   │
+│ 30.4 ┆ 4.0 ┆ 75.7  ┆ 52.0  ┆ … ┆ 1.0 ┆ 4.0  ┆ 2.0  ┆ great   │
+│ 30.4 ┆ 4.0 ┆ 95.1  ┆ 113.0 ┆ … ┆ 1.0 ┆ 5.0  ┆ 2.0  ┆ great   │
+│ 27.3 ┆ 4.0 ┆ 79.0  ┆ 66.0  ┆ … ┆ 1.0 ┆ 4.0  ┆ 1.0  ┆ great   │
+│ …    ┆ …   ┆ …     ┆ …     ┆ … ┆ …   ┆ …    ┆ …    ┆ …       │
+│ 14.7 ┆ 8.0 ┆ 440.0 ┆ 230.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 4.0  ┆ bad     │
+│ 14.3 ┆ 8.0 ┆ 360.0 ┆ 245.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 4.0  ┆ bad     │
+│ 13.3 ┆ 8.0 ┆ 350.0 ┆ 245.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 4.0  ┆ bad     │
+│ 10.4 ┆ 8.0 ┆ 472.0 ┆ 205.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 4.0  ┆ bad     │
+│ 10.4 ┆ 8.0 ┆ 460.0 ┆ 215.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 4.0  ┆ bad     │
+└──────┴─────┴───────┴───────┴───┴─────┴──────┴──────┴─────────┘</code></pre>
 </div>
 </div>
 </section>
