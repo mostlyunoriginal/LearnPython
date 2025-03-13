@@ -25,7 +25,7 @@ print(table)
 ```
 
 ### python version
-I'm using polars instead of pandas as it feels more natural to me coming from tidy-style R programming. I'm invoking the lazy API (instead of the eager API) by using a lazy data frame. This is actually more similar to dtplyr than dplyr. The query is assembled as `q` and then executed/compiled and saved to `table`.
+I'm using polars instead of pandas as it feels more natural to me coming from tidy-style R programming. I'm invoking lazy evaluation (as opposed to eager) by using a lazy frame. This is actually more similar to dtplyr than dplyr. A query plan is assembled as `q` and then evaluated and the result saved to `table`. This 'lazy' approach allows polars to do query optimization.
 
 While there is no pipe, the method chaining approach used below *feels* very familiar.
 ```{python}
@@ -60,7 +60,9 @@ print(table)
 ### python version
 With polars, it doesn't appear that I can mix the `group_by` and `with_columns` contexts. Equivalent output necessitates a 2-step approach that calculates and joins on the the group-level statistics before invoking my recode expression in the `with_columns` context, which is roughly analogous to `dplyr::mutate()`.
 
-Note that I won't be surprised to learn that what I did above in the dplyr version *is* possible with polars and I just don't yet know how. In any case, the 2-step works and still fits within a single method chain without too much additional typing.
+Note that I won't be surprised to learn that what I did above in the dplyr version *is* possible with polars (spoiler: it is--see update below) and I just don't yet know how. In any case, the 2-step works and still fits within a single method chain without too much additional typing.
+
+Update: while `group_by` and `with_columns` contexts can't be mixed, grouping can be incorporated into the `with_columns` context via the window function `over()`. This is actually *more* powerful than `group_by() %>% mutate()` in R because you can have a different groupings across expressions in a common `with_columns` context.
 ```{python}
 q=(
     mtcars.join(
@@ -72,6 +74,18 @@ q=(
     )
     .with_columns((pl.col("mpg")/pl.col("den")).alias("rel.mpg"))
     .drop("den")
+)
+
+table=q.collect()
+
+print(table)
+
+#this produces equivalent output, while being computationally optimal and more concise
+q=(
+    mtcars
+    .with_columns(
+        ((pl.col("mpg"))/(pl.col("mpg").mean().over("cyl"))).alias("rel.mpg")
+    )
 )
 
 table=q.collect()
