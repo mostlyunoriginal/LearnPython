@@ -143,8 +143,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │ --- ┆ ---       │
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
-│ 4.0 ┆ 26.663636 │
 │ 8.0 ┆ 15.1      │
+│ 4.0 ┆ 26.663636 │
 │ 6.0 ┆ 19.742857 │
 └─────┴───────────┘</code></pre>
 </div>
@@ -281,14 +281,14 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
-│ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
-│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
-│ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 │ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
-│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
-│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
+│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
 </div>
@@ -296,7 +296,10 @@ argument.</code></pre>
 </section>
 <section id="function-for-n-pct-by-grouping-variables" class="level2">
 <h2 class="anchored" data-anchor-id="function-for-n-pct-by-grouping-variables">4. Function for n &amp; pct by Grouping Variables</h2>
-<p>In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user. ### r version I use dynamic dots here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings.</p>
+<p>In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.</p>
+<section id="r-version-3" class="level3">
+<h3 class="anchored" data-anchor-id="r-version-3">r version</h3>
+<p>I use dynamic dots here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -340,9 +343,10 @@ argument.</code></pre>
 8     8     5     2  6.25    32 100   </code></pre>
 </div>
 </div>
+</section>
 <section id="python-version-3" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-3">python version</h3>
-<p>The version below gets very close! The only differences are that the python version of <code>doit()</code> doesn’t work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the <code>group_by</code> context) and the variable names are passed as strings. This latter point should actually simplify some situations that are complex due to data mask ambiguities.</p>
+<p>The version below gets very close! The only differences are that the python version of <code>doit()</code> doesn’t work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the <code>group_by</code> context) and the variable names are passed as strings. This latter point should actually simplify some situations that are complex due to data mask ambiguities in tidy functions.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> doit(df,<span class="op">*</span>argv):</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    q<span class="op">=</span>(</span>
@@ -398,7 +402,10 @@ argument.</code></pre>
 </section>
 <section id="iterate-a-custom-function" class="level2">
 <h2 class="anchored" data-anchor-id="iterate-a-custom-function">5. Iterate a Custom Function</h2>
-<p>Here I want to apply the <code>doit</code> functions over parameters. ### r version I use <code>purrr::pmap()</code> in the R version with a list of parameters. Since I defined the R version of <code>doit</code> to take naked symbols, the mapped version is kind of clunky–it would have been better had I parmaterized to take variable names as strings.</p>
+<p>Here I want to apply the <code>doit</code> functions over parameters.</p>
+<section id="r-version-4" class="level3">
+<h3 class="anchored" data-anchor-id="r-version-4">r version</h3>
+<p>I use <code>purrr::pmap()</code> in the R version with a list of parameters. Since I defined the R version of <code>doit</code> to take naked symbols, the mapped version is kind of clunky–it would have been better had I parmaterized to take variable names as strings.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(mtcars,mtcars)</span>
@@ -433,6 +440,7 @@ argument.</code></pre>
 6     8     1     2  6.25    32 100   </code></pre>
 </div>
 </div>
+</section>
 <section id="python-version-4" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-4">python version</h3>
 <p>Super simple! I combine 3 parameter series into a single iterator object via <code>zip</code>–can then map <code>doit</code> over <code>parms</code> via <code>itertools.starmap</code>. Awesome!</p>

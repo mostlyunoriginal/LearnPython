@@ -114,6 +114,7 @@ print(table)
 
 ## 4. Function for n & pct by Grouping Variables
 In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.
+
 ### r version
 I use dynamic dots here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings.
 ```{r}
@@ -135,7 +136,7 @@ doit(mtcars,cyl,gear)
 ```
 
 ### python version
-The version below gets very close! The only differences are that the python version of `doit()` doesn't work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the `group_by` context) and the variable names are passed as strings. This latter point should actually simplify some situations that are complex due to data mask ambiguities.
+The version below gets very close! The only differences are that the python version of `doit()` doesn't work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the `group_by` context) and the variable names are passed as strings. This latter point should actually simplify some situations that are complex due to data mask ambiguities in tidy functions.
 ```{python}
 def doit(df,*argv):
     q=(
@@ -162,6 +163,7 @@ doit(mtcars,"cyl","gear")
 
 ## 5. Iterate a Custom Function
 Here I want to apply the `doit` functions over parameters.
+
 ### r version
 I use `purrr::pmap()` in the R version with a list of parameters. Since I defined the R version of `doit` to take naked symbols, the mapped version is kind of clunky--it would have been better had I parmaterized to take variable names as strings.
 ```{r}
