@@ -268,3 +268,46 @@ df=q.collect()
 print(df)
 
 ```
+
+## 7. Stack Data Frames by List Binding with Map and Anonymous Function
+
+### r version
+```{r}
+parms<-distinct(mtcars,cyl) %>%
+  pull()
+
+list<-map(
+  parms
+  ,function (x){
+    mtcars %>%
+      dplyr::filter(cyl==x) %>%
+      arrange(desc(mpg))
+  }
+)
+
+df<-list_rbind(list)
+
+print(df)
+
+```
+
+### python version
+```{python}
+mtcars=pl.read_csv("mtcars.csv")
+
+parms=mtcars.get_column("cyl").unique()
+
+df=map(
+    lambda x: (
+        mtcars
+        .filter(pl.col("cyl")==x)
+        .sort("mpg",descending=True)
+    )
+    ,parms
+)
+
+df=pl.concat(list(df))
+
+print(df)
+
+```

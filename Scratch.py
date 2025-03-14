@@ -1,20 +1,27 @@
 import polars as pl
+import itertools as it
 
-mtcars=pl.scan_csv("mtcars.csv")
+mtcars=pl.read_csv("mtcars.csv")
 
-q=(
+parms=(
     mtcars
-    .with_columns(
-        pl.when(pl.col("mpg")<10).then(pl.lit("very bad"))
-        .when(pl.col("mpg")<15).then(pl.lit("bad"))
-        .when(pl.col("mpg")<20).then(pl.lit("okay"))
-        .when(pl.col("mpg")<25).then(pl.lit("good"))
-        .otherwise(pl.lit("great"))
-        .alias("mpg.cat")
-    )
-    .sort("mpg",descending=True)
+    .group_by("cyl","gear")
+    .agg()
 )
 
-df=q.collect()
+iterator=[tuple(row) for row in parms.iter_rows(named=False)]
+
+df=it.starmap(
+    lambda cyl, gear: (
+        mtcars
+        .filter(
+            (pl.col("cyl")==cyl) & (pl.col("gear")==gear)
+        )
+      
+    )
+    ,iterator
+)
+
+df=pl.concat(list(df))
 
 print(df)
