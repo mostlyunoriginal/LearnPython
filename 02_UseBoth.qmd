@@ -18,7 +18,6 @@ abstract: >
 #library(tidyverse)
 ```
 
-
 ## 1. Basic Summarize without Generalization
 
 ### R Version
@@ -123,6 +122,7 @@ In both cases I want a custom function to create simple, list-style frequency ta
 I use dynamic dots (`...`) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings--this scales up better and is more comparable to the python version.
 ```{r}
 library(rlang)
+library(purrr)
 
 doit<-function(df,...){
   df %>%
@@ -194,14 +194,14 @@ parms<-list(
     ,"var2"=list(mtcars$gear,mtcars$am)
 )
 
-purrr::pmap(parms,doit)
+pmap(parms,doit)
 
 parms2<-list(
     c("cyl","cyl")
     ,c("gear","am")
 )
 
-purrr::pmap(parms2,doit2,df=mtcars)
+pmap(parms2,doit2,df=mtcars)
 
 ```
 

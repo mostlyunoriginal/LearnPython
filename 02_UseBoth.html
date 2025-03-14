@@ -163,9 +163,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │ --- ┆ ---       │
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
-│ 6.0 ┆ 19.742857 │
 │ 8.0 ┆ 15.1      │
 │ 4.0 ┆ 26.663636 │
+│ 6.0 ┆ 19.742857 │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
@@ -295,13 +295,13 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
 │ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
-│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
-│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
-│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
 │ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
+│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
@@ -316,17 +316,18 @@ argument.</code></pre>
 <p>I use dynamic dots (<code>...</code>) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (<code>doit()</code>); an alternative version (<code>doit2()</code>) also uses dynamic dots, but with the intention to call with variable names provided as strings–this scales up better and is more comparable to the python version.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>doit<span class="ot">&lt;-</span><span class="cf">function</span>(df,...){</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">N=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(...) <span class="sc">%&gt;%</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">n=</span><span class="fu">n</span>(),<span class="at">pct=</span><span class="fu">n</span>()<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">mean</span>(N),<span class="at">.groups=</span><span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cumn=</span><span class="fu">cumsum</span>(n),<span class="at">cumpct=</span><span class="fu">cumsum</span>(pct))</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>doit<span class="ot">&lt;-</span><span class="cf">function</span>(df,...){</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">N=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(...) <span class="sc">%&gt;%</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">n=</span><span class="fu">n</span>(),<span class="at">pct=</span><span class="fu">n</span>()<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">mean</span>(N),<span class="at">.groups=</span><span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cumn=</span><span class="fu">cumsum</span>(n),<span class="at">cumpct=</span><span class="fu">cumsum</span>(pct))</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
       n   pct  cumn cumpct
@@ -470,7 +471,7 @@ argument.</code></pre>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    ,<span class="st">"var2"</span><span class="ot">=</span><span class="fu">list</span>(mtcars<span class="sc">$</span>gear,mtcars<span class="sc">$</span>am)</span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">pmap</span>(parms,doit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="fu">pmap</span>(parms,doit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 # A tibble: 8 × 6
@@ -501,7 +502,7 @@ argument.</code></pre>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    ,<span class="fu">c</span>(<span class="st">"gear"</span>,<span class="st">"am"</span>)</span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">pmap</span>(parms2,doit2,<span class="at">df=</span>mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pmap</span>(parms2,doit2,<span class="at">df=</span>mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 # A tibble: 8 × 6
@@ -866,17 +867,17 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 │ ---            ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
 │ str            ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
 ╞════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Hornet 4 Drive ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Valiant        ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Datsun 710     ┆ 22.8 ┆ 4   ┆ 108.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Merc 240D      ┆ 24.4 ┆ 4   ┆ 146.7 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 2    │
+│ Merc 230       ┆ 22.8 ┆ 4   ┆ 140.8 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 2    │
+│ …              ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
 │ Mazda RX4      ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
 │ Mazda RX4 Wag  ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
 │ Merc 280       ┆ 19.2 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
 │ Merc 280C      ┆ 17.8 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
 │ Ferrari Dino   ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
-│ …              ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
-│ Fiat X1-9      ┆ 27.3 ┆ 4   ┆ 79.0  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
-│ Volvo 142E     ┆ 21.4 ┆ 4   ┆ 121.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
-│ Hornet 4 Drive ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Valiant        ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Toyota Corona  ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
 └────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
 </div>
 </div>
