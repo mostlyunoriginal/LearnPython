@@ -9,7 +9,7 @@
 <meta name="author" content="G. Lance Couzens">
 <meta name="dcterms.date" content="2025-03-14">
 
-<title>Recreate Some Tidy-Style R Operations with Python and Polars</title>
+<title>Recreating Some Tidy-Style R Operations with Python and Polars</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -81,7 +81,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Recreate Some Tidy-Style R Operations with Python and Polars</h1>
+<h1 class="title">Recreating Some Tidy-Style R Operations with Python and Polars</h1>
 </div>
 
 
@@ -108,7 +108,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div>
   <div class="abstract">
     <div class="block-title">Abstract</div>
-    <p>In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations and some scalable programming approaches as equivalently as possible in both Tidy-style R and Polars-style Python. For tidyverse syntax, refer to the <code>Reference</code> page for each package under [tidyverse.org]. For Polars, consult the <a href="https://docs.pola.rs/">user guide</a> for high-level information, and dive into <a href="https://docs.pola.rs/api/python/dev/reference/index.html">the API reference</a> for full detail and syntax.</p>
+    <p>In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations, and some scalable programming approaches, as equivalently as possible in both Tidy-style R and Polars-style Python. For tidyverse syntax, refer to the <code>Reference</code> page for each package under <a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>. For Polars, consult the <a href="https://docs.pola.rs/">user guide</a> for high-level information, and dive into <a href="https://docs.pola.rs/api/python/dev/reference/index.html">the API reference</a> for full detail and syntax.</p>
   </div>
 </div>
 
@@ -163,9 +163,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │ --- ┆ ---       │
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
+│ 6.0 ┆ 19.742857 │
 │ 8.0 ┆ 15.1      │
 │ 4.0 ┆ 26.663636 │
-│ 6.0 ┆ 19.742857 │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
@@ -208,7 +208,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        ((pl.col(<span class="st">"mpg"</span>))<span class="op">/</span>(pl.col(<span class="st">"mpg"</span>).mean().over(<span class="st">"cyl"</span>))).alias(<span class="st">"rel.mpg"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"mpg"</span>)<span class="op">/</span>pl.col(<span class="st">"mpg"</span>).mean().over(<span class="st">"cyl"</span>)).alias(<span class="st">"rel.mpg"</span>)</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
@@ -295,13 +295,13 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
+│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
 │ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
-│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
-│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
-│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 │ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
@@ -531,7 +531,7 @@ argument.</code></pre>
 </section>
 <section id="python-version-4" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-4">Python Version</h3>
-<p>Super simple! I combine 3 parameter series into a single iterator object via <code>zip</code>–can then map <code>doit</code> over <code>parms</code> via <code>itertools.starmap</code>. Awesome!</p>
+<p>Super simple! I combine 3 parameter series into a single iterator object via <code>zip</code>–I can then map <code>doit</code> over <code>parms</code> via <code>itertools.starmap</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools <span class="im">as</span> it</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -774,8 +774,8 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4</code></
 </div>
 </section>
 </section>
-<section id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of" class="level2">
-<h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of">8. Stack Data Frames by List Binding with pmap and Anonymous Function of …</h2>
+<section id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of-dots-..." class="level2">
+<h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of-dots-...">8. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (<code>...</code>)</h2>
 <p>This example generalizes the previous one to use a data frame with any number of columns (here I’m just using 2) to parameterize the mapping.</p>
 <section id="r-version-7" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-7">R Version</h3>
@@ -834,7 +834,7 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 </section>
 <section id="python-version-7" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-7">Python Version</h3>
-<p>This is functionally very similar to the r version above. Note that I was originally thinking I would need <code>itertools.starmap()</code> here, but it proved unnecessary. The key is that <code>iterator</code> is a list of dictionaries (<code>iter_rows()</code> returns dictionaries when <code>named=True</code>) which allows me to capture a single dictionary with <code>x</code> for each iteration, and the variable values can be referenced by variable name in the function body as <code>x['name']</code>.</p>
+<p>This is very similar to the R version above. Note that I was originally thinking I would need <code>itertools.starmap()</code> here, but it proved unnecessary. The key is that <code>iterator</code> is a list of dictionaries (<code>iter_rows()</code> returns dictionaries when <code>named=True</code>) which allows me to capture a single dictionary with <code>x</code> for each iteration, and the variable values can be referenced by variable name in the function body as <code>x['name']</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.read_csv(<span class="st">"mtcars.csv"</span>)</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -861,23 +861,23 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 <span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
-┌───────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
-│                   ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
-│ ---               ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
-│ str               ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
-╞═══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
-│ Toyota Corona     ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Hornet 4 Drive    ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Valiant           ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Hornet Sportabout ┆ 18.7 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
-│ Duster 360        ┆ 14.3 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
-│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
-│ Honda Civic       ┆ 30.4 ┆ 4   ┆ 75.7  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
-│ Toyota Corolla    ┆ 33.9 ┆ 4   ┆ 71.1  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
-│ Fiat X1-9         ┆ 27.3 ┆ 4   ┆ 79.0  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
-│ Volvo 142E        ┆ 21.4 ┆ 4   ┆ 121.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
-│ Ferrari Dino      ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
-└───────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
+┌────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
+│                ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
+│ ---            ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
+│ str            ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
+╞════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Mazda RX4      ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
+│ Mazda RX4 Wag  ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
+│ Merc 280       ┆ 19.2 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
+│ Merc 280C      ┆ 17.8 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
+│ Ferrari Dino   ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
+│ …              ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Fiat X1-9      ┆ 27.3 ┆ 4   ┆ 79.0  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Volvo 142E     ┆ 21.4 ┆ 4   ┆ 121.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
+│ Hornet 4 Drive ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Valiant        ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Toyota Corona  ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+└────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
 </div>
 </div>
 </section>

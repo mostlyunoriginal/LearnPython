@@ -1,14 +1,14 @@
 ---
-title: "Recreate Some Tidy-Style R Operations with Python and Polars"
+title: "Recreating Some Tidy-Style R Operations with Python and Polars"
 date: 2025-03-14
 format: html
 author:
     - name: G. Lance Couzens
       email: gcouzens@rti.org  
 abstract: >
-    In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations and some scalable programming approaches as equivalently as possible in both Tidy-style R and Polars-style Python.
+    In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations, and some scalable programming approaches, as equivalently as possible in both Tidy-style R and Polars-style Python.
 
-    For tidyverse syntax, refer to the `Reference` page for each package under [tidyverse.org]. For Polars, consult the [user guide](https://docs.pola.rs/) for high-level information, and dive into [the API reference](https://docs.pola.rs/api/python/dev/reference/index.html) for full detail and syntax.
+    For tidyverse syntax, refer to the `Reference` page for each package under <https://www.tidyverse.org/>. For Polars, consult the [user guide](https://docs.pola.rs/) for high-level information, and dive into [the API reference](https://docs.pola.rs/api/python/dev/reference/index.html) for full detail and syntax.
 ---
 
 ```{r}
@@ -73,7 +73,7 @@ With polars, we can't mix the `group_by` and `with_columns` contexts. But, while
 q=(
     mtcars
     .with_columns(
-        ((pl.col("mpg"))/(pl.col("mpg").mean().over("cyl"))).alias("rel.mpg")
+        (pl.col("mpg")/pl.col("mpg").mean().over("cyl")).alias("rel.mpg")
     )
 )
 
@@ -206,7 +206,7 @@ purrr::pmap(parms2,doit2,df=mtcars)
 ```
 
 ### Python Version
-Super simple! I combine 3 parameter series into a single iterator object via `zip`--can then map `doit` over `parms` via `itertools.starmap`. Awesome!
+Super simple! I combine 3 parameter series into a single iterator object via `zip`--I can then map `doit` over `parms` via `itertools.starmap`.
 ```{python}
 import itertools as it
 
@@ -306,7 +306,7 @@ print(df)
 
 ```
 
-## 8. Stack Data Frames by List Binding with pmap and Anonymous Function of ...
+## 8. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (`...`)
 This example generalizes the previous one to use a data frame with any number of columns (here I'm just using 2) to parameterize the mapping.
 
 ### R Version
@@ -330,7 +330,7 @@ print(df)
 ```
 
 ### Python Version
-This is functionally very similar to the r version above. Note that I was originally thinking I would need `itertools.starmap()` here, but it proved unnecessary. The key is that `iterator` is a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single dictionary with `x` for each iteration, and the variable values can be referenced by variable name in the function body as `x['name']`.
+This is very similar to the R version above. Note that I was originally thinking I would need `itertools.starmap()` here, but it proved unnecessary. The key is that `iterator` is a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single dictionary with `x` for each iteration, and the variable values can be referenced by variable name in the function body as `x['name']`.
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
 
