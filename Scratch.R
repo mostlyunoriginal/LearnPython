@@ -1,14 +1,13 @@
 library(dplyr)
 
-parms<-distinct(mtcars,cyl) %>%
-  pull()
+parms<-distinct(mtcars,cyl,gear)
 
-list<-map(
+list<-pmap(
   parms
-  ,function (x){
+  ,function (...){
+    parms<-rlang::dots_list(...)
     mtcars %>%
-      dplyr::filter(cyl==x) %>%
-      arrange(desc(mpg))
+      dplyr::filter(cyl==parms$cyl & gear==parms$gear) 
   }
 )
 

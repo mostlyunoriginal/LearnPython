@@ -249,6 +249,7 @@ mtcars %>%
 ```
 
 ### python version
+This is clearly more wordy than the r version above. Note that `pl.lit()` seemed to be necessary for creating the recode as a string (maybe because the column used in the conditional is a float?).
 ```{python}
 q=(
     mtcars
@@ -270,8 +271,10 @@ print(df)
 ```
 
 ## 7. Stack Data Frames by List Binding with Map and Anonymous Function
+What I'm achieving with this example--returning `mtcars`--isn't very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I'm reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
 
 ### r version
+Pretty straight forward. Note that parms is a vector here.
 ```{r}
 parms<-distinct(mtcars,cyl) %>%
   pull()
@@ -292,6 +295,7 @@ print(df)
 ```
 
 ### python version
+This is extremely similar. Note that I'm pulling from the csv of `mtcars` to utilize eager evaluation (for simplicity).
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
 
@@ -304,6 +308,58 @@ df=map(
         .sort("mpg",descending=True)
     )
     ,parms
+)
+
+df=pl.concat(list(df))
+
+print(df)
+
+```
+
+## 8. Stack Data Frames by List Binding with pmap and Anonymous Function of ...
+This example generalizes the previous one to use a data frame with any number of columns (here I'm just using 2) to parameterize the mapping.
+
+### r version
+Dynamic dots are captured in the list `parms` within the function and column values are referenced as elements of that list.
+```{r}
+parms<-distinct(mtcars,cyl,gear)
+
+list<-pmap(
+  parms
+  ,function (...){
+    parms<-rlang::dots_list(...)
+    mtcars %>%
+      dplyr::filter(cyl==parms$cyl & gear==parms$gear) 
+  }
+)
+
+df<-list_rbind(list)
+
+print(df)
+
+```
+
+### python version
+This is functionally very similar to the r version above. Note that I was originally thinking I would need `itertools.starmap()` here, but it proved unnecessary. The key is that `iterator` is a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single dictionary with `x` for each iteration, and the variable values can be referenced by variable name in the function body as `x['name']`.
+```{python}
+mtcars=pl.read_csv("mtcars.csv")
+
+parms=(
+    mtcars
+    .group_by("cyl","gear")
+    .agg()
+)
+
+iterator=list(parms.iter_rows(named=True))
+
+df=map(
+    lambda x: (
+        mtcars
+        .filter(
+            (pl.col("cyl")==x['cyl']) & (pl.col("gear")==x['gear'])
+        )
+    )
+    ,iterator
 )
 
 df=pl.concat(list(df))

@@ -1,5 +1,4 @@
 import polars as pl
-import itertools as it
 
 mtcars=pl.read_csv("mtcars.csv")
 
@@ -9,15 +8,14 @@ parms=(
     .agg()
 )
 
-iterator=[tuple(row) for row in parms.iter_rows(named=False)]
+iterator=list(parms.iter_rows(named=True))
 
-df=it.starmap(
-    lambda cyl, gear: (
+df=map(
+    lambda x: (
         mtcars
         .filter(
-            (pl.col("cyl")==cyl) & (pl.col("gear")==gear)
+            (pl.col("cyl")==x['cyl']) & (pl.col("gear")==x['gear'])
         )
-      
     )
     ,iterator
 )
