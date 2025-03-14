@@ -364,6 +364,7 @@ In this example I start with `mtcars` (a version with rownames mapped to the col
 ### R Version
 ```{r}
 library(tidyr)
+library(tibble)
 
 cars<-rownames_to_column(mtcars,"car") %>%
   pivot_longer(
