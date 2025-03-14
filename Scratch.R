@@ -1,16 +1,19 @@
-library(dplyr)
+library(tidyr)
 
-parms<-distinct(mtcars,cyl,gear)
+cars<-rownames_to_column(mtcars,"car") %>%
+  pivot_longer(
+    cols=where(is.numeric)
+    ,names_to="variable"
+    ,values_to="value"
+  )
 
-list<-pmap(
-  parms
-  ,function (...){
-    parms<-rlang::dots_list(...)
-    mtcars %>%
-      dplyr::filter(cyl==parms$cyl & gear==parms$gear) 
-  }
-)
+print(cars)
 
-df<-list_rbind(list)
+mtcars<-cars %>%
+  pivot_wider(
+    id_cols=car
+    ,names_from="variable"
+    ,values_from="value"
+  )
 
-print(df)
+print(mtcars)

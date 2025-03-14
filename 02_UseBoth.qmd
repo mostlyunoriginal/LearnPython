@@ -1,6 +1,14 @@
 ---
-title: "Recreate Some dplyr Shiz with Python and Polars"
+title: "Recreate Some Tidy-Style R Operations with Python and Polars"
+date: 2025-03-14
 format: html
+author:
+    - name: G. Lance Couzens
+      email: gcouzens@rti.org  
+abstract: >
+    In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations and some scalable programming approaches as equivalently as possible in both Tidy-style R and Polars-style Python.
+
+    For tidyverse syntax, refer to the `Reference` page for each package under [tidyverse.org]. For Polars, consult the [user guide](https://docs.pola.rs/) for high-level information, and dive into [the API reference](https://docs.pola.rs/api/python/dev/reference/index.html) for full detail and syntax.
 ---
 
 ```{r}
@@ -12,7 +20,8 @@ format: html
 
 
 ## 1. Basic Summarize without Generalization
-### r version
+
+### R Version
 ```{r}
 library(dplyr)
 
@@ -24,10 +33,10 @@ print(table)
 
 ```
 
-### python version
-I'm using polars instead of pandas as it feels more natural to me coming from tidy-style R programming. I'm invoking lazy evaluation (as opposed to eager) by using a lazy frame. This is actually more similar to dtplyr than dplyr. A query plan is assembled as `q` and then evaluated and the result saved to `table`. This 'lazy' approach allows polars to do query optimization.
+### Python Version
+I'm using polars instead of pandas as it feels more natural coming from Tidy-style R programming. I'm invoking lazy evaluation (as opposed to eager) by using a lazy frame. This is actually more similar to `dtplyr` than `dplyr`. A query plan is assembled as `q` and then evaluated and the result saved to `table`. This 'lazy' approach allows polars to do its own query optimization behind the scenes.
 
-While there is no pipe, the method chaining approach used below *feels* very familiar.
+While there is no pipe analogous to `%>%` or `|>`, the method chaining approach used below *feels* very familiar.
 ```{python}
 import polars as pl
 
@@ -46,7 +55,8 @@ print(table)
 ```
 
 ## 2. Basic Mutate with Grouping and without Generalization
-### r version
+
+### R Version
 In R I can create a recode via `mutate()` that utilizes both group-level statistics and record-level data. This can be done in a single step with very little code.
 ```{r}
 table<-mtcars %>%
@@ -57,30 +67,9 @@ print(table)
 
 ```
 
-### python version
-With polars, it doesn't appear that I can mix the `group_by` and `with_columns` contexts. Equivalent output necessitates a 2-step approach that calculates and joins on the the group-level statistics before invoking my recode expression in the `with_columns` context, which is roughly analogous to `dplyr::mutate()`.
-
-Note that I won't be surprised to learn that what I did above in the dplyr version *is* possible with polars (spoiler: it is--see update below) and I just don't yet know how. In any case, the 2-step works and still fits within a single method chain without too much additional typing.
-
-Update: while `group_by` and `with_columns` contexts can't be mixed, grouping can be incorporated into the `with_columns` context via the window function `over()`. This is actually *more* powerful than `group_by() %>% mutate()` in R because you can have a different groupings across expressions in a common `with_columns` context.
+### Python Version
+With polars, we can't mix the `group_by` and `with_columns` contexts. But, while `group_by` and `with_columns` contexts can't be mixed, grouping can be incorporated into the `with_columns` (or `select`) context via the window function `over()`. This is actually *more* powerful than `group_by() %>% mutate()` in R because you can have a different groupings across expressions in a common `with_columns` context.
 ```{python}
-q=(
-    mtcars.join(
-        mtcars
-        .group_by("cyl")
-        .agg(pl.col("mpg").mean().alias("den"))
-        ,on="cyl"
-        ,how="left"
-    )
-    .with_columns((pl.col("mpg")/pl.col("den")).alias("rel.mpg"))
-    .drop("den")
-)
-
-table=q.collect()
-
-print(table)
-
-#this produces equivalent output, while being computationally optimal and more concise
 q=(
     mtcars
     .with_columns(
@@ -94,8 +83,9 @@ print(table)
 
 ```
 
-## 3. Summarize Generalized by Variable Type with Across()
-### r version
+## 3. Summarize Generalized by Variable Type with Across
+
+### R Version
 ```{r}
 mtcars %>%
     group_by(cyl,gear) %>%
@@ -109,7 +99,7 @@ mtcars %>%
 
 ```
 
-### python version
+### Python Version
 Note that there are *many* selector functions available, as explained [here](https://docs.pola.rs/api/python/stable/reference/selectors.html). This is a good example of how a selector function (`cs.float()` in this case) works in conjunction with namaing methods, like `expr.name.suffix()` below. See other methods [here](https://docs.pola.rs/api/python/stable/reference/expressions/name.html).
 ```{python}
 import polars.selectors as cs
@@ -129,8 +119,8 @@ print(table)
 ## 4. Function for n & pct by Grouping Variables
 In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.
 
-### r version
-I use dynamic dots here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings--this scales up better and is more comparable to the python version.
+### R Version
+I use dynamic dots (`...`) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings--this scales up better and is more comparable to the python version.
 ```{r}
 library(rlang)
 
@@ -166,7 +156,7 @@ doit2(mtcars,"cyl","gear")
 
 ```
 
-### python version
+### Python Version
 The version below gets very close! The only differences are that the python version of `doit()` doesn't work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the `group_by` context) and the variable names are passed as strings (i.e., this doesn't seem to be optional as with the tidy versions). This latter point should actually simplify some situations that are complex due to data mask ambiguities in tidy functions.
 ```{python}
 def doit(df,*argv):
@@ -195,7 +185,7 @@ doit(mtcars,"cyl","gear")
 ## 5. Iterate a Custom Function
 Here I want to apply the `doit` functions over parameters.
 
-### r version
+### R Version
 I use `purrr::pmap()` in the R version with a list of parameters. Since I defined the R version of `doit` to take naked symbols, the mapped version is kind of clunky--a cleaner alternative based on `doit2` highlights the point.
 ```{r}
 parms<-list(
@@ -215,7 +205,7 @@ purrr::pmap(parms2,doit2,df=mtcars)
 
 ```
 
-### python version
+### Python Version
 Super simple! I combine 3 parameter series into a single iterator object via `zip`--can then map `doit` over `parms` via `itertools.starmap`. Awesome!
 ```{python}
 import itertools as it
@@ -232,7 +222,7 @@ list(it.starmap(doit,parms))
 
 ## 6. Conditional Recode
 
-### r version
+### R Version
 ```{r}
 mtcars %>%
     mutate(
@@ -248,7 +238,7 @@ mtcars %>%
 
 ```
 
-### python version
+### Python Version
 This is clearly more wordy than the r version above. Note that `pl.lit()` seemed to be necessary for creating the recode as a string (maybe because the column used in the conditional is a float?).
 ```{python}
 q=(
@@ -273,7 +263,7 @@ print(df)
 ## 7. Stack Data Frames by List Binding with Map and Anonymous Function
 What I'm achieving with this example--returning `mtcars`--isn't very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I'm reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
 
-### r version
+### R Version
 Pretty straight forward. Note that parms is a vector here.
 ```{r}
 parms<-distinct(mtcars,cyl) %>%
@@ -294,7 +284,7 @@ print(df)
 
 ```
 
-### python version
+### Python Version
 This is extremely similar. Note that I'm pulling from the csv of `mtcars` to utilize eager evaluation (for simplicity).
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
@@ -319,7 +309,7 @@ print(df)
 ## 8. Stack Data Frames by List Binding with pmap and Anonymous Function of ...
 This example generalizes the previous one to use a data frame with any number of columns (here I'm just using 2) to parameterize the mapping.
 
-### r version
+### R Version
 Dynamic dots are captured in the list `parms` within the function and column values are referenced as elements of that list.
 ```{r}
 parms<-distinct(mtcars,cyl,gear)
@@ -339,7 +329,7 @@ print(df)
 
 ```
 
-### python version
+### Python Version
 This is functionally very similar to the r version above. Note that I was originally thinking I would need `itertools.starmap()` here, but it proved unnecessary. The key is that `iterator` is a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single dictionary with `x` for each iteration, and the variable values can be referenced by variable name in the function body as `x['name']`.
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
@@ -365,5 +355,85 @@ df=map(
 df=pl.concat(list(df))
 
 print(df)
+
+```
+
+## 9. Pivots
+In this example I start with `mtcars` (a version with rownames mapped to the column `car`), pivot to a long file and then back to wide.
+
+### R Version
+```{r}
+library(tidyr)
+
+cars<-rownames_to_column(mtcars,"car") %>%
+  pivot_longer(
+    cols=where(is.numeric)
+    ,names_to="variable"
+    ,values_to="value"
+  )
+
+print(cars)
+
+mtcars<-cars %>%
+  pivot_wider(
+    id_cols=car
+    ,names_from="variable"
+    ,values_from="value"
+  )
+
+print(mtcars)
+
+```
+
+### Python Version
+With polars, going from wide to long is an [unpivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html) and long to wide is a [pivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html). Note that the lazy version of a pivot has a different structure in which it's preceeded by `collect()` and followed by `lazy()`--I've included an eager version for contrast.
+```{python}
+import polars.selectors as cs
+
+mtcars=pl.scan_csv("mtcars_w_names.csv")
+
+q=(
+    mtcars
+    .unpivot(
+        on=cs.numeric()
+        ,index="car"
+        ,variable_name="variable"
+        ,value_name="value"
+    )
+)
+
+cars=q.collect()
+
+print(cars)
+
+#lazy
+q=(
+    cars.lazy()
+    .collect()
+    .pivot(
+        index="car"
+        ,on="variable"
+        ,values="value"
+        ,aggregate_function=None
+    )
+    .lazy()
+)
+
+mtcars=q.collect()
+
+print(mtcars)
+
+#eager
+mtcars=(
+    cars
+    .pivot(
+        index="car"
+        ,on="variable"
+        ,values="value"
+        ,aggregate_function=None
+    )
+)
+
+print(mtcars)
 
 ```

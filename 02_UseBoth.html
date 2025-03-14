@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="G. Lance Couzens">
+<meta name="dcterms.date" content="2025-03-14">
 
-<title>Recreate Some dplyr Shiz with Python and Polars</title>
+<title>Recreate Some Tidy-Style R Operations with Python and Polars</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -79,18 +81,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Recreate Some dplyr Shiz with Python and Polars</h1>
+<h1 class="title">Recreate Some Tidy-Style R Operations with Python and Polars</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>G. Lance Couzens <a href="mailto:gcouzens@rti.org" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 14, 2025</p>
+    </div>
+  </div>
   
     
   </div>
   
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    <p>In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations and some scalable programming approaches as equivalently as possible in both Tidy-style R and Polars-style Python. For tidyverse syntax, refer to the <code>Reference</code> page for each package under [tidyverse.org]. For Polars, consult the <a href="https://docs.pola.rs/">user guide</a> for high-level information, and dive into <a href="https://docs.pola.rs/api/python/dev/reference/index.html">the API reference</a> for full detail and syntax.</p>
+  </div>
+</div>
 
 
 </header>
@@ -99,7 +119,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="basic-summarize-without-generalization" class="level2">
 <h2 class="anchored" data-anchor-id="basic-summarize-without-generalization">1. Basic Summarize without Generalization</h2>
 <section id="r-version" class="level3">
-<h3 class="anchored" data-anchor-id="r-version">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version">R Version</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -119,9 +139,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 <section id="python-version" class="level3">
-<h3 class="anchored" data-anchor-id="python-version">python version</h3>
-<p>I’m using polars instead of pandas as it feels more natural to me coming from tidy-style R programming. I’m invoking lazy evaluation (as opposed to eager) by using a lazy frame. This is actually more similar to dtplyr than dplyr. A query plan is assembled as <code>q</code> and then evaluated and the result saved to <code>table</code>. This ‘lazy’ approach allows polars to do query optimization.</p>
-<p>While there is no pipe, the method chaining approach used below <em>feels</em> very familiar.</p>
+<h3 class="anchored" data-anchor-id="python-version">Python Version</h3>
+<p>I’m using polars instead of pandas as it feels more natural coming from Tidy-style R programming. I’m invoking lazy evaluation (as opposed to eager) by using a lazy frame. This is actually more similar to <code>dtplyr</code> than <code>dplyr</code>. A query plan is assembled as <code>q</code> and then evaluated and the result saved to <code>table</code>. This ‘lazy’ approach allows polars to do its own query optimization behind the scenes.</p>
+<p>While there is no pipe analogous to <code>%&gt;%</code> or <code>|&gt;</code>, the method chaining approach used below <em>feels</em> very familiar.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -143,9 +163,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │ --- ┆ ---       │
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
-│ 6.0 ┆ 19.742857 │
 │ 8.0 ┆ 15.1      │
 │ 4.0 ┆ 26.663636 │
+│ 6.0 ┆ 19.742857 │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
@@ -154,7 +174,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="basic-mutate-with-grouping-and-without-generalization" class="level2">
 <h2 class="anchored" data-anchor-id="basic-mutate-with-grouping-and-without-generalization">2. Basic Mutate with Grouping and without Generalization</h2>
 <section id="r-version-1" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-1">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version-1">R Version</h3>
 <p>In R I can create a recode via <code>mutate()</code> that utilizes both group-level statistics and record-level data. This can be done in a single step with very little code.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>table<span class="ot">&lt;-</span>mtcars <span class="sc">%&gt;%</span></span>
@@ -182,57 +202,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 <section id="python-version-1" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-1">python version</h3>
-<p>With polars, it doesn’t appear that I can mix the <code>group_by</code> and <code>with_columns</code> contexts. Equivalent output necessitates a 2-step approach that calculates and joins on the the group-level statistics before invoking my recode expression in the <code>with_columns</code> context, which is roughly analogous to <code>dplyr::mutate()</code>.</p>
-<p>Note that I won’t be surprised to learn that what I did above in the dplyr version <em>is</em> possible with polars (spoiler: it is–see update below) and I just don’t yet know how. In any case, the 2-step works and still fits within a single method chain without too much additional typing.</p>
-<p>Update: while <code>group_by</code> and <code>with_columns</code> contexts can’t be mixed, grouping can be incorporated into the <code>with_columns</code> context via the window function <code>over()</code>. This is actually <em>more</em> powerful than <code>group_by() %&gt;% mutate()</code> in R because you can have a different groupings across expressions in a common <code>with_columns</code> context.</p>
+<h3 class="anchored" data-anchor-id="python-version-1">Python Version</h3>
+<p>With polars, we can’t mix the <code>group_by</code> and <code>with_columns</code> contexts. But, while <code>group_by</code> and <code>with_columns</code> contexts can’t be mixed, grouping can be incorporated into the <code>with_columns</code> (or <code>select</code>) context via the window function <code>over()</code>. This is actually <em>more</em> powerful than <code>group_by() %&gt;% mutate()</code> in R because you can have a different groupings across expressions in a common <code>with_columns</code> context.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    mtcars.join(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        mtcars</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"cyl"</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        .agg(pl.col(<span class="st">"mpg"</span>).mean().alias(<span class="st">"den"</span>))</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        ,on<span class="op">=</span><span class="st">"cyl"</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        ,how<span class="op">=</span><span class="st">"left"</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    .with_columns((pl.col(<span class="st">"mpg"</span>)<span class="op">/</span>pl.col(<span class="st">"den"</span>)).alias(<span class="st">"rel.mpg"</span>))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"den"</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>table<span class="op">=</span>q.collect()</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>shape: (32, 12)
-┌──────┬─────┬───────┬───────┬───┬─────┬──────┬──────┬──────────┐
-│ mpg  ┆ cyl ┆ disp  ┆ hp    ┆ … ┆ am  ┆ gear ┆ carb ┆ rel.mpg  │
-│ ---  ┆ --- ┆ ---   ┆ ---   ┆   ┆ --- ┆ ---  ┆ ---  ┆ ---      │
-│ f64  ┆ f64 ┆ f64   ┆ f64   ┆   ┆ f64 ┆ f64  ┆ f64  ┆ f64      │
-╞══════╪═════╪═══════╪═══════╪═══╪═════╪══════╪══════╪══════════╡
-│ 21.0 ┆ 6.0 ┆ 160.0 ┆ 110.0 ┆ … ┆ 1.0 ┆ 4.0  ┆ 4.0  ┆ 1.063676 │
-│ 21.0 ┆ 6.0 ┆ 160.0 ┆ 110.0 ┆ … ┆ 1.0 ┆ 4.0  ┆ 4.0  ┆ 1.063676 │
-│ 22.8 ┆ 4.0 ┆ 108.0 ┆ 93.0  ┆ … ┆ 1.0 ┆ 4.0  ┆ 1.0  ┆ 0.855097 │
-│ 21.4 ┆ 6.0 ┆ 258.0 ┆ 110.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 1.0  ┆ 1.083936 │
-│ 18.7 ┆ 8.0 ┆ 360.0 ┆ 175.0 ┆ … ┆ 0.0 ┆ 3.0  ┆ 2.0  ┆ 1.238411 │
-│ …    ┆ …   ┆ …     ┆ …     ┆ … ┆ …   ┆ …    ┆ …    ┆ …        │
-│ 30.4 ┆ 4.0 ┆ 95.1  ┆ 113.0 ┆ … ┆ 1.0 ┆ 5.0  ┆ 2.0  ┆ 1.14013  │
-│ 15.8 ┆ 8.0 ┆ 351.0 ┆ 264.0 ┆ … ┆ 1.0 ┆ 5.0  ┆ 4.0  ┆ 1.046358 │
-│ 19.7 ┆ 6.0 ┆ 145.0 ┆ 175.0 ┆ … ┆ 1.0 ┆ 5.0  ┆ 6.0  ┆ 0.997829 │
-│ 15.0 ┆ 8.0 ┆ 301.0 ┆ 335.0 ┆ … ┆ 1.0 ┆ 5.0  ┆ 8.0  ┆ 0.993377 │
-│ 21.4 ┆ 4.0 ┆ 121.0 ┆ 109.0 ┆ … ┆ 1.0 ┆ 4.0  ┆ 2.0  ┆ 0.802591 │
-└──────┴─────┴───────┴───────┴───┴─────┴──────┴──────┴──────────┘</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#this produces equivalent output, while being computationally optimal and more concise</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        ((pl.col(<span class="st">"mpg"</span>))<span class="op">/</span>(pl.col(<span class="st">"mpg"</span>).mean().over(<span class="st">"cyl"</span>))).alias(<span class="st">"rel.mpg"</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>table<span class="op">=</span>q.collect()</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        ((pl.col(<span class="st">"mpg"</span>))<span class="op">/</span>(pl.col(<span class="st">"mpg"</span>).mean().over(<span class="st">"cyl"</span>))).alias(<span class="st">"rel.mpg"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>table<span class="op">=</span>q.collect()</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
 ┌──────┬─────┬───────┬───────┬───┬─────┬──────┬──────┬──────────┐
@@ -257,19 +239,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 <section id="summarize-generalized-by-variable-type-with-across" class="level2">
-<h2 class="anchored" data-anchor-id="summarize-generalized-by-variable-type-with-across">3. Summarize Generalized by Variable Type with Across()</h2>
+<h2 class="anchored" data-anchor-id="summarize-generalized-by-variable-type-with-across">3. Summarize Generalized by Variable Type with Across</h2>
 <section id="r-version-2" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-2">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version-2">R Version</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(cyl,gear) <span class="sc">%&gt;%</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">across</span>(</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.cols=</span><span class="fu">where</span>(is.double)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>            ,<span class="at">.fns=</span>mean</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>            ,<span class="at">.names=</span><span class="st">"{.col}_mean"</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(cyl,gear) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">across</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.cols=</span><span class="fu">where</span>(is.double)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>            ,<span class="at">.fns=</span>mean</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            ,<span class="at">.names=</span><span class="st">"{.col}_mean"</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has grouped output by 'cyl'. You can override using the `.groups`
 argument.</code></pre>
@@ -292,20 +274,20 @@ argument.</code></pre>
 </div>
 </section>
 <section id="python-version-2" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-2">python version</h3>
+<h3 class="anchored" data-anchor-id="python-version-2">Python Version</h3>
 <p>Note that there are <em>many</em> selector functions available, as explained <a href="https://docs.pola.rs/api/python/stable/reference/selectors.html">here</a>. This is a good example of how a selector function (<code>cs.float()</code> in this case) works in conjunction with namaing methods, like <code>expr.name.suffix()</code> below. See other methods <a href="https://docs.pola.rs/api/python/stable/reference/expressions/name.html">here</a>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    .agg(cs.<span class="bu">float</span>().mean().name.suffix(<span class="st">"_mean"</span>))</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>table<span class="op">=</span>q.collect()</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    .agg(cs.<span class="bu">float</span>().mean().name.suffix(<span class="st">"_mean"</span>))</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>table<span class="op">=</span>q.collect()</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (8, 11)
 ┌─────┬──────┬──────────┬────────────┬───┬───────────┬─────────┬─────────┬───────────┐
@@ -313,14 +295,14 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
-│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
-│ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
-│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
-│ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 │ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
+│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
 </div>
@@ -330,28 +312,28 @@ argument.</code></pre>
 <h2 class="anchored" data-anchor-id="function-for-n-pct-by-grouping-variables">4. Function for n &amp; pct by Grouping Variables</h2>
 <p>In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.</p>
 <section id="r-version-3" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-3">r version</h3>
-<p>I use dynamic dots here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (<code>doit()</code>); an alternative version (<code>doit2()</code>) also uses dynamic dots, but with the intention to call with variable names provided as strings–this scales up better and is more comparable to the python version.</p>
+<h3 class="anchored" data-anchor-id="r-version-3">R Version</h3>
+<p>I use dynamic dots (<code>...</code>) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (<code>doit()</code>); an alternative version (<code>doit2()</code>) also uses dynamic dots, but with the intention to call with variable names provided as strings–this scales up better and is more comparable to the python version.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>doit<span class="ot">&lt;-</span><span class="cf">function</span>(df,...){</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">N=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(...) <span class="sc">%&gt;%</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">n=</span><span class="fu">n</span>(),<span class="at">pct=</span><span class="fu">n</span>()<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">mean</span>(N),<span class="at">.groups=</span><span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cumn=</span><span class="fu">cumsum</span>(n),<span class="at">cumpct=</span><span class="fu">cumsum</span>(pct))</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>doit<span class="ot">&lt;-</span><span class="cf">function</span>(df,...){</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">N=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(...) <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">n=</span><span class="fu">n</span>(),<span class="at">pct=</span><span class="fu">n</span>()<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">mean</span>(N),<span class="at">.groups=</span><span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cumn=</span><span class="fu">cumsum</span>(n),<span class="at">cumpct=</span><span class="fu">cumsum</span>(pct))</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
       n   pct  cumn cumpct
   &lt;int&gt; &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;
 1    32   100    32    100</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars,cyl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars,cyl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 5
     cyl     n   pct  cumn cumpct
@@ -360,7 +342,7 @@ argument.</code></pre>
 2     6     7  21.9    18   56.2
 3     8    14  43.8    32  100  </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars,cyl,gear)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit</span>(mtcars,cyl,gear)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 6
     cyl  gear     n   pct  cumn cumpct
@@ -374,27 +356,27 @@ argument.</code></pre>
 7     8     3    12 37.5     30  93.8 
 8     8     5     2  6.25    32 100   </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>doit2<span class="ot">&lt;-</span><span class="cf">function</span>(df,...){</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    vars<span class="ot">&lt;-</span><span class="fu">dots_list</span>(...) <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list_c</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">syms</span>()</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    df <span class="sc">%&gt;%</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">N=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(<span class="sc">!!!</span>vars) <span class="sc">%&gt;%</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarize</span>(<span class="at">n=</span><span class="fu">n</span>(),<span class="at">pct=</span><span class="fu">n</span>()<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">mean</span>(N),<span class="at">.groups=</span><span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">cumn=</span><span class="fu">cumsum</span>(n),<span class="at">cumpct=</span><span class="fu">cumsum</span>(pct))</span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="fu">doit2</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>doit2<span class="ot">&lt;-</span><span class="cf">function</span>(df,...){</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    vars<span class="ot">&lt;-</span><span class="fu">dots_list</span>(...) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list_c</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">syms</span>()</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    df <span class="sc">%&gt;%</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">N=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(<span class="sc">!!!</span>vars) <span class="sc">%&gt;%</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarize</span>(<span class="at">n=</span><span class="fu">n</span>(),<span class="at">pct=</span><span class="fu">n</span>()<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">mean</span>(N),<span class="at">.groups=</span><span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">cumn=</span><span class="fu">cumsum</span>(n),<span class="at">cumpct=</span><span class="fu">cumsum</span>(pct))</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="fu">doit2</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
       n   pct  cumn cumpct
   &lt;int&gt; &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;
 1    32   100    32    100</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit2</span>(mtcars,<span class="st">"cyl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit2</span>(mtcars,<span class="st">"cyl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 5
     cyl     n   pct  cumn cumpct
@@ -403,7 +385,7 @@ argument.</code></pre>
 2     6     7  21.9    18   56.2
 3     8    14  43.8    32  100  </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit2</span>(mtcars,<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">doit2</span>(mtcars,<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 6
     cyl  gear     n   pct  cumn cumpct
@@ -420,28 +402,28 @@ argument.</code></pre>
 </div>
 </section>
 <section id="python-version-3" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-3">python version</h3>
+<h3 class="anchored" data-anchor-id="python-version-3">Python Version</h3>
 <p>The version below gets very close! The only differences are that the python version of <code>doit()</code> doesn’t work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the <code>group_by</code> context) and the variable names are passed as strings (i.e., this doesn’t seem to be optional as with the tidy versions). This latter point should actually simplify some situations that are complex due to data mask ambiguities in tidy functions.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> doit(df,<span class="op">*</span>argv):</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    q<span class="op">=</span>(</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>        df</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.<span class="bu">len</span>().alias(<span class="st">"N"</span>))</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="op">*</span>argv)</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>            pl.<span class="bu">len</span>().alias(<span class="st">"n"</span>)</span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>            ,((pl.<span class="bu">len</span>()<span class="op">*</span><span class="dv">100</span>)<span class="op">/</span>pl.col(<span class="st">"N"</span>).mean()).alias(<span class="st">"pct"</span>)</span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>        .sort(<span class="op">*</span>argv)</span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>        .with_columns(</span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"n"</span>).cum_sum().alias(<span class="st">"cumn"</span>)</span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>            ,pl.col(<span class="st">"pct"</span>).cum_sum().alias(<span class="st">"cumpct"</span>)</span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    table<span class="op">=</span>q.collect()</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(table)</span>
-<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>doit(mtcars,<span class="st">"cyl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> doit(df,<span class="op">*</span>argv):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    q<span class="op">=</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>        df</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.<span class="bu">len</span>().alias(<span class="st">"N"</span>))</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="op">*</span>argv)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>            pl.<span class="bu">len</span>().alias(<span class="st">"n"</span>)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>            ,((pl.<span class="bu">len</span>()<span class="op">*</span><span class="dv">100</span>)<span class="op">/</span>pl.col(<span class="st">"N"</span>).mean()).alias(<span class="st">"pct"</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>        .sort(<span class="op">*</span>argv)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>        .with_columns(</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"n"</span>).cum_sum().alias(<span class="st">"cumn"</span>)</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>            ,pl.col(<span class="st">"pct"</span>).cum_sum().alias(<span class="st">"cumpct"</span>)</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    table<span class="op">=</span>q.collect()</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(table)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>doit(mtcars,<span class="st">"cyl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (3, 5)
 ┌─────┬─────┬────────┬──────┬────────┐
@@ -454,7 +436,7 @@ argument.</code></pre>
 │ 8.0 ┆ 14  ┆ 43.75  ┆ 32   ┆ 100.0  │
 └─────┴─────┴────────┴──────┴────────┘</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>doit(mtcars,<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>doit(mtcars,<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (8, 6)
 ┌─────┬──────┬─────┬───────┬──────┬────────┐
@@ -479,16 +461,16 @@ argument.</code></pre>
 <h2 class="anchored" data-anchor-id="iterate-a-custom-function">5. Iterate a Custom Function</h2>
 <p>Here I want to apply the <code>doit</code> functions over parameters.</p>
 <section id="r-version-4" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-4">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version-4">R Version</h3>
 <p>I use <code>purrr::pmap()</code> in the R version with a list of parameters. Since I defined the R version of <code>doit</code> to take naked symbols, the mapped version is kind of clunky–a cleaner alternative based on <code>doit2</code> highlights the point.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(mtcars,mtcars)</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    ,<span class="st">"var1"</span><span class="ot">=</span><span class="fu">list</span>(mtcars<span class="sc">$</span>cyl,mtcars<span class="sc">$</span>cyl)</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    ,<span class="st">"var2"</span><span class="ot">=</span><span class="fu">list</span>(mtcars<span class="sc">$</span>gear,mtcars<span class="sc">$</span>am)</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">pmap</span>(parms,doit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(mtcars,mtcars)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    ,<span class="st">"var1"</span><span class="ot">=</span><span class="fu">list</span>(mtcars<span class="sc">$</span>cyl,mtcars<span class="sc">$</span>cyl)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    ,<span class="st">"var2"</span><span class="ot">=</span><span class="fu">list</span>(mtcars<span class="sc">$</span>gear,mtcars<span class="sc">$</span>am)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">pmap</span>(parms,doit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 # A tibble: 8 × 6
@@ -514,12 +496,12 @@ argument.</code></pre>
 5     8     0    12 37.5     30  93.8 
 6     8     1     2  6.25    32 100   </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>parms2<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"cyl"</span>,<span class="st">"cyl"</span>)</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    ,<span class="fu">c</span>(<span class="st">"gear"</span>,<span class="st">"am"</span>)</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">pmap</span>(parms2,doit2,<span class="at">df=</span>mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>parms2<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"cyl"</span>,<span class="st">"cyl"</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    ,<span class="fu">c</span>(<span class="st">"gear"</span>,<span class="st">"am"</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">pmap</span>(parms2,doit2,<span class="at">df=</span>mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 # A tibble: 8 × 6
@@ -548,18 +530,18 @@ argument.</code></pre>
 </div>
 </section>
 <section id="python-version-4" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-4">python version</h3>
+<h3 class="anchored" data-anchor-id="python-version-4">Python Version</h3>
 <p>Super simple! I combine 3 parameter series into a single iterator object via <code>zip</code>–can then map <code>doit</code> over <code>parms</code> via <code>itertools.starmap</code>. Awesome!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools <span class="im">as</span> it</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>parms<span class="op">=</span><span class="bu">zip</span>(</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    [mtcars,mtcars]</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    ,[<span class="st">'cyl'</span>,<span class="st">'cyl'</span>]</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    ,[<span class="st">'gear'</span>,<span class="st">'am'</span>]</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(it.starmap(doit,parms))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools <span class="im">as</span> it</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>parms<span class="op">=</span><span class="bu">zip</span>(</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    [mtcars,mtcars]</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    ,[<span class="st">'cyl'</span>,<span class="st">'cyl'</span>]</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    ,[<span class="st">'gear'</span>,<span class="st">'am'</span>]</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(it.starmap(doit,parms))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (8, 6)
 ┌─────┬──────┬─────┬───────┬──────┬────────┐
@@ -597,19 +579,19 @@ shape: (6, 6)
 <section id="conditional-recode" class="level2">
 <h2 class="anchored" data-anchor-id="conditional-recode">6. Conditional Recode</h2>
 <section id="r-version-5" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-5">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version-5">R Version</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">mpg.cat=</span><span class="fu">case_when</span>(</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>            mpg<span class="sc">&lt;</span><span class="dv">10</span><span class="sc">~</span><span class="st">"very bad"</span></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">15</span><span class="sc">~</span><span class="st">"bad"</span></span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">20</span><span class="sc">~</span><span class="st">"okay"</span></span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">25</span><span class="sc">~</span><span class="st">"good"</span></span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>            ,<span class="cn">TRUE</span><span class="sc">~</span><span class="st">"great"</span></span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(mpg))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">mpg.cat=</span><span class="fu">case_when</span>(</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>            mpg<span class="sc">&lt;</span><span class="dv">10</span><span class="sc">~</span><span class="st">"very bad"</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">15</span><span class="sc">~</span><span class="st">"bad"</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">20</span><span class="sc">~</span><span class="st">"okay"</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>            ,mpg<span class="sc">&lt;</span><span class="dv">25</span><span class="sc">~</span><span class="st">"good"</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>            ,<span class="cn">TRUE</span><span class="sc">~</span><span class="st">"great"</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(mpg))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb mpg.cat
 Toyota Corolla      33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1   great
@@ -648,25 +630,25 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 </div>
 </section>
 <section id="python-version-5" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-5">python version</h3>
+<h3 class="anchored" data-anchor-id="python-version-5">Python Version</h3>
 <p>This is clearly more wordy than the r version above. Note that <code>pl.lit()</code> seemed to be necessary for creating the recode as a string (maybe because the column used in the conditional is a float?).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>        pl.when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">10</span>).then(pl.lit(<span class="st">"very bad"</span>))</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">15</span>).then(pl.lit(<span class="st">"bad"</span>))</span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">20</span>).then(pl.lit(<span class="st">"okay"</span>))</span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">25</span>).then(pl.lit(<span class="st">"good"</span>))</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>        .otherwise(pl.lit(<span class="st">"great"</span>))</span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"mpg.cat"</span>)</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"mpg"</span>,descending<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>q.collect()</span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>        pl.when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">10</span>).then(pl.lit(<span class="st">"very bad"</span>))</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">15</span>).then(pl.lit(<span class="st">"bad"</span>))</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">20</span>).then(pl.lit(<span class="st">"okay"</span>))</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"mpg"</span>)<span class="op">&lt;</span><span class="dv">25</span>).then(pl.lit(<span class="st">"good"</span>))</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>        .otherwise(pl.lit(<span class="st">"great"</span>))</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"mpg.cat"</span>)</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"mpg"</span>,descending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>q.collect()</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
 ┌──────┬─────┬───────┬───────┬───┬─────┬──────┬──────┬─────────┐
@@ -694,24 +676,24 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 <h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-map-and-anonymous-function">7. Stack Data Frames by List Binding with Map and Anonymous Function</h2>
 <p>What I’m achieving with this example–returning <code>mtcars</code>–isn’t very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I’m reassembling <code>mtcars</code> by stacking together portions returned from each iteration of <code>map</code>.</p>
 <section id="r-version-6" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-6">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version-6">R Version</h3>
 <p>Pretty straight forward. Note that parms is a vector here.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">distinct</span>(mtcars,cyl) <span class="sc">%&gt;%</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>()</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>list<span class="ot">&lt;-</span><span class="fu">map</span>(</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  parms</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  ,<span class="cf">function</span> (x){</span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(cyl<span class="sc">==</span>x) <span class="sc">%&gt;%</span></span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(<span class="fu">desc</span>(mpg))</span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">list_rbind</span>(list)</span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">distinct</span>(mtcars,cyl) <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>()</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>list<span class="ot">&lt;-</span><span class="fu">map</span>(</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  parms</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  ,<span class="cf">function</span> (x){</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(cyl<span class="sc">==</span>x) <span class="sc">%&gt;%</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(<span class="fu">desc</span>(mpg))</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">list_rbind</span>(list)</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb
 Hornet 4 Drive      21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
@@ -750,25 +732,25 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4</code></
 </div>
 </section>
 <section id="python-version-6" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-6">python version</h3>
+<h3 class="anchored" data-anchor-id="python-version-6">Python Version</h3>
 <p>This is extremely similar. Note that I’m pulling from the csv of <code>mtcars</code> to utilize eager evaluation (for simplicity).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.read_csv(<span class="st">"mtcars.csv"</span>)</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>parms<span class="op">=</span>mtcars.get_column(<span class="st">"cyl"</span>).unique()</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span><span class="bu">map</span>(</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> x: (</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>        mtcars</span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(pl.col(<span class="st">"cyl"</span>)<span class="op">==</span>x)</span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>        .sort(<span class="st">"mpg"</span>,descending<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>    ,parms</span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>pl.concat(<span class="bu">list</span>(df))</span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.read_csv(<span class="st">"mtcars.csv"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>parms<span class="op">=</span>mtcars.get_column(<span class="st">"cyl"</span>).unique()</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span><span class="bu">map</span>(</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> x: (</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>        mtcars</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(pl.col(<span class="st">"cyl"</span>)<span class="op">==</span>x)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>        .sort(<span class="st">"mpg"</span>,descending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    ,parms</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>pl.concat(<span class="bu">list</span>(df))</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
 ┌─────────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
@@ -796,23 +778,23 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4</code></
 <h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of">8. Stack Data Frames by List Binding with pmap and Anonymous Function of …</h2>
 <p>This example generalizes the previous one to use a data frame with any number of columns (here I’m just using 2) to parameterize the mapping.</p>
 <section id="r-version-7" class="level3">
-<h3 class="anchored" data-anchor-id="r-version-7">r version</h3>
+<h3 class="anchored" data-anchor-id="r-version-7">R Version</h3>
 <p>Dynamic dots are captured in the list <code>parms</code> within the function and column values are referenced as elements of that list.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">distinct</span>(mtcars,cyl,gear)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>list<span class="ot">&lt;-</span><span class="fu">pmap</span>(</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  parms</span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  ,<span class="cf">function</span> (...){</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    parms<span class="ot">&lt;-</span>rlang<span class="sc">::</span><span class="fu">dots_list</span>(...)</span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(cyl<span class="sc">==</span>parms<span class="sc">$</span>cyl <span class="sc">&amp;</span> gear<span class="sc">==</span>parms<span class="sc">$</span>gear) </span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">list_rbind</span>(list)</span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">distinct</span>(mtcars,cyl,gear)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>list<span class="ot">&lt;-</span><span class="fu">pmap</span>(</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  parms</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  ,<span class="cf">function</span> (...){</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    parms<span class="ot">&lt;-</span>rlang<span class="sc">::</span><span class="fu">dots_list</span>(...)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(cyl<span class="sc">==</span>parms<span class="sc">$</span>cyl <span class="sc">&amp;</span> gear<span class="sc">==</span>parms<span class="sc">$</span>gear) </span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">list_rbind</span>(list)</span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb
 Mazda RX4           21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
@@ -851,51 +833,221 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 </div>
 </section>
 <section id="python-version-7" class="level3">
-<h3 class="anchored" data-anchor-id="python-version-7">python version</h3>
+<h3 class="anchored" data-anchor-id="python-version-7">Python Version</h3>
 <p>This is functionally very similar to the r version above. Note that I was originally thinking I would need <code>itertools.starmap()</code> here, but it proved unnecessary. The key is that <code>iterator</code> is a list of dictionaries (<code>iter_rows()</code> returns dictionaries when <code>named=True</code>) which allows me to capture a single dictionary with <code>x</code> for each iteration, and the variable values can be referenced by variable name in the function body as <code>x['name']</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.read_csv(<span class="st">"mtcars.csv"</span>)</span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>parms<span class="op">=</span>(</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    .agg()</span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>iterator<span class="op">=</span><span class="bu">list</span>(parms.iter_rows(named<span class="op">=</span><span class="va">True</span>))</span>
-<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span><span class="bu">map</span>(</span>
-<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> x: (</span>
-<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>        mtcars</span>
-<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(</span>
-<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a>            (pl.col(<span class="st">"cyl"</span>)<span class="op">==</span>x[<span class="st">'cyl'</span>]) <span class="op">&amp;</span> (pl.col(<span class="st">"gear"</span>)<span class="op">==</span>x[<span class="st">'gear'</span>])</span>
-<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb48-18"><a href="#cb48-18" aria-hidden="true" tabindex="-1"></a>    ,iterator</span>
-<span id="cb48-19"><a href="#cb48-19" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb48-20"><a href="#cb48-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-21"><a href="#cb48-21" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>pl.concat(<span class="bu">list</span>(df))</span>
-<span id="cb48-22"><a href="#cb48-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-23"><a href="#cb48-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.read_csv(<span class="st">"mtcars.csv"</span>)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>parms<span class="op">=</span>(</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"cyl"</span>,<span class="st">"gear"</span>)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    .agg()</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>iterator<span class="op">=</span><span class="bu">list</span>(parms.iter_rows(named<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span><span class="bu">map</span>(</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> x: (</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>        mtcars</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>            (pl.col(<span class="st">"cyl"</span>)<span class="op">==</span>x[<span class="st">'cyl'</span>]) <span class="op">&amp;</span> (pl.col(<span class="st">"gear"</span>)<span class="op">==</span>x[<span class="st">'gear'</span>])</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>    ,iterator</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span>pl.concat(<span class="bu">list</span>(df))</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
-┌──────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
-│                  ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
-│ ---              ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
-│ str              ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
-╞══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
-│ Porsche 914-2    ┆ 26.0 ┆ 4   ┆ 120.3 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 2    │
-│ Lotus Europa     ┆ 30.4 ┆ 4   ┆ 95.1  ┆ … ┆ 1   ┆ 1   ┆ 5    ┆ 2    │
-│ Toyota Corona    ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Mazda RX4        ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
-│ Mazda RX4 Wag    ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
-│ …                ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
-│ Pontiac Firebird ┆ 19.2 ┆ 8   ┆ 400.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
-│ Hornet 4 Drive   ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Valiant          ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Ford Pantera L   ┆ 15.8 ┆ 8   ┆ 351.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 4    │
-│ Maserati Bora    ┆ 15.0 ┆ 8   ┆ 301.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 8    │
-└──────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
+┌───────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
+│                   ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
+│ ---               ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
+│ str               ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
+╞═══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Toyota Corona     ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Hornet 4 Drive    ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Valiant           ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Hornet Sportabout ┆ 18.7 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
+│ Duster 360        ┆ 14.3 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
+│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Honda Civic       ┆ 30.4 ┆ 4   ┆ 75.7  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
+│ Toyota Corolla    ┆ 33.9 ┆ 4   ┆ 71.1  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Fiat X1-9         ┆ 27.3 ┆ 4   ┆ 79.0  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Volvo 142E        ┆ 21.4 ┆ 4   ┆ 121.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
+│ Ferrari Dino      ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
+└───────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="pivots" class="level2">
+<h2 class="anchored" data-anchor-id="pivots">9. Pivots</h2>
+<p>In this example I start with <code>mtcars</code> (a version with rownames mapped to the column <code>car</code>), pivot to a long file and then back to wide.</p>
+<section id="r-version-8" class="level3">
+<h3 class="anchored" data-anchor-id="r-version-8">R Version</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>cars<span class="ot">&lt;-</span><span class="fu">rownames_to_column</span>(mtcars,<span class="st">"car"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols=</span><span class="fu">where</span>(is.numeric)</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    ,<span class="at">names_to=</span><span class="st">"variable"</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>    ,<span class="at">values_to=</span><span class="st">"value"</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 352 × 3
+   car       variable  value
+   &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt;
+ 1 Mazda RX4 mpg       21   
+ 2 Mazda RX4 cyl        6   
+ 3 Mazda RX4 disp     160   
+ 4 Mazda RX4 hp       110   
+ 5 Mazda RX4 drat       3.9 
+ 6 Mazda RX4 wt         2.62
+ 7 Mazda RX4 qsec      16.5 
+ 8 Mazda RX4 vs         0   
+ 9 Mazda RX4 am         1   
+10 Mazda RX4 gear       4   
+# ℹ 342 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="ot">&lt;-</span>cars <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">id_cols=</span>car</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    ,<span class="at">names_from=</span><span class="st">"variable"</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    ,<span class="at">values_from=</span><span class="st">"value"</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 32 × 12
+   car           mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+   &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 Mazda RX4    21       6  160    110  3.9   2.62  16.5     0     1     4     4
+ 2 Mazda RX4 …  21       6  160    110  3.9   2.88  17.0     0     1     4     4
+ 3 Datsun 710   22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
+ 4 Hornet 4 D…  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
+ 5 Hornet Spo…  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+ 6 Valiant      18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+ 7 Duster 360   14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+ 8 Merc 240D    24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+ 9 Merc 230     22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+10 Merc 280     19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+# ℹ 22 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="python-version-8" class="level3">
+<h3 class="anchored" data-anchor-id="python-version-8">Python Version</h3>
+<p>With polars, going from wide to long is an <a href="https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html">unpivot</a> and long to wide is a <a href="https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html">pivot</a>. Note that the lazy version of a pivot has a different structure in which it’s preceeded by <code>collect()</code> and followed by <code>lazy()</code>–I’ve included an eager version for contrast.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.scan_csv(<span class="st">"mtcars_w_names.csv"</span>)</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>    mtcars</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>    .unpivot(</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span>cs.numeric()</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>        ,index<span class="op">=</span><span class="st">"car"</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>        ,variable_name<span class="op">=</span><span class="st">"variable"</span></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>        ,value_name<span class="op">=</span><span class="st">"value"</span></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>cars<span class="op">=</span>q.collect()</span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>shape: (352, 3)
+┌───────────────────┬──────────┬───────┐
+│ car               ┆ variable ┆ value │
+│ ---               ┆ ---      ┆ ---   │
+│ str               ┆ str      ┆ f64   │
+╞═══════════════════╪══════════╪═══════╡
+│ Mazda RX4         ┆ mpg      ┆ 21.0  │
+│ Mazda RX4 Wag     ┆ mpg      ┆ 21.0  │
+│ Datsun 710        ┆ mpg      ┆ 22.8  │
+│ Hornet 4 Drive    ┆ mpg      ┆ 21.4  │
+│ Hornet Sportabout ┆ mpg      ┆ 18.7  │
+│ …                 ┆ …        ┆ …     │
+│ Lotus Europa      ┆ carb     ┆ 2.0   │
+│ Ford Pantera L    ┆ carb     ┆ 4.0   │
+│ Ferrari Dino      ┆ carb     ┆ 6.0   │
+│ Maserati Bora     ┆ carb     ┆ 8.0   │
+│ Volvo 142E        ┆ carb     ┆ 2.0   │
+└───────────────────┴──────────┴───────┘</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">#lazy</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>q<span class="op">=</span>(</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    cars.lazy()</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    .pivot(</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>        index<span class="op">=</span><span class="st">"car"</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>        ,on<span class="op">=</span><span class="st">"variable"</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>        ,values<span class="op">=</span><span class="st">"value"</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>        ,aggregate_function<span class="op">=</span><span class="va">None</span></span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>    .lazy()</span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>q.collect()</span>
+<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>shape: (32, 12)
+┌───────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
+│ car               ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
+│ ---               ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
+│ str               ┆ f64  ┆ f64 ┆ f64   ┆   ┆ f64 ┆ f64 ┆ f64  ┆ f64  │
+╞═══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Mazda RX4         ┆ 21.0 ┆ 6.0 ┆ 160.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 4.0  ┆ 4.0  │
+│ Mazda RX4 Wag     ┆ 21.0 ┆ 6.0 ┆ 160.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 4.0  ┆ 4.0  │
+│ Datsun 710        ┆ 22.8 ┆ 4.0 ┆ 108.0 ┆ … ┆ 1.0 ┆ 1.0 ┆ 4.0  ┆ 1.0  │
+│ Hornet 4 Drive    ┆ 21.4 ┆ 6.0 ┆ 258.0 ┆ … ┆ 1.0 ┆ 0.0 ┆ 3.0  ┆ 1.0  │
+│ Hornet Sportabout ┆ 18.7 ┆ 8.0 ┆ 360.0 ┆ … ┆ 0.0 ┆ 0.0 ┆ 3.0  ┆ 2.0  │
+│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Lotus Europa      ┆ 30.4 ┆ 4.0 ┆ 95.1  ┆ … ┆ 1.0 ┆ 1.0 ┆ 5.0  ┆ 2.0  │
+│ Ford Pantera L    ┆ 15.8 ┆ 8.0 ┆ 351.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 5.0  ┆ 4.0  │
+│ Ferrari Dino      ┆ 19.7 ┆ 6.0 ┆ 145.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 5.0  ┆ 6.0  │
+│ Maserati Bora     ┆ 15.0 ┆ 8.0 ┆ 301.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 5.0  ┆ 8.0  │
+│ Volvo 142E        ┆ 21.4 ┆ 4.0 ┆ 121.0 ┆ … ┆ 1.0 ┆ 1.0 ┆ 4.0  ┆ 2.0  │
+└───────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co">#eager</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>(</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>    cars</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    .pivot(</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>        index<span class="op">=</span><span class="st">"car"</span></span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>        ,on<span class="op">=</span><span class="st">"variable"</span></span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>        ,values<span class="op">=</span><span class="st">"value"</span></span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>        ,aggregate_function<span class="op">=</span><span class="va">None</span></span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>shape: (32, 12)
+┌───────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
+│ car               ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
+│ ---               ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
+│ str               ┆ f64  ┆ f64 ┆ f64   ┆   ┆ f64 ┆ f64 ┆ f64  ┆ f64  │
+╞═══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Mazda RX4         ┆ 21.0 ┆ 6.0 ┆ 160.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 4.0  ┆ 4.0  │
+│ Mazda RX4 Wag     ┆ 21.0 ┆ 6.0 ┆ 160.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 4.0  ┆ 4.0  │
+│ Datsun 710        ┆ 22.8 ┆ 4.0 ┆ 108.0 ┆ … ┆ 1.0 ┆ 1.0 ┆ 4.0  ┆ 1.0  │
+│ Hornet 4 Drive    ┆ 21.4 ┆ 6.0 ┆ 258.0 ┆ … ┆ 1.0 ┆ 0.0 ┆ 3.0  ┆ 1.0  │
+│ Hornet Sportabout ┆ 18.7 ┆ 8.0 ┆ 360.0 ┆ … ┆ 0.0 ┆ 0.0 ┆ 3.0  ┆ 2.0  │
+│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Lotus Europa      ┆ 30.4 ┆ 4.0 ┆ 95.1  ┆ … ┆ 1.0 ┆ 1.0 ┆ 5.0  ┆ 2.0  │
+│ Ford Pantera L    ┆ 15.8 ┆ 8.0 ┆ 351.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 5.0  ┆ 4.0  │
+│ Ferrari Dino      ┆ 19.7 ┆ 6.0 ┆ 145.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 5.0  ┆ 6.0  │
+│ Maserati Bora     ┆ 15.0 ┆ 8.0 ┆ 301.0 ┆ … ┆ 0.0 ┆ 1.0 ┆ 5.0  ┆ 8.0  │
+│ Volvo 142E        ┆ 21.4 ┆ 4.0 ┆ 121.0 ┆ … ┆ 1.0 ┆ 1.0 ┆ 4.0  ┆ 2.0  │
+└───────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
 </div>
 </div>
 </section>

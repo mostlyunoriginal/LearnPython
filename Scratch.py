@@ -1,25 +1,29 @@
 import polars as pl
+import polars.selectors as cs
 
-mtcars=pl.read_csv("mtcars.csv")
+mtcars=pl.scan_csv("mtcars_w_names.csv")
 
-parms=(
+q=(
     mtcars
-    .group_by("cyl","gear")
-    .agg()
+    .unpivot(cs.numeric(),index="car")
 )
 
-iterator=list(parms.iter_rows(named=True))
+cars=q.collect()
 
-df=map(
-    lambda x: (
-        mtcars
-        .filter(
-            (pl.col("cyl")==x['cyl']) & (pl.col("gear")==x['gear'])
-        )
+print(cars)
+
+q=(
+    cars.lazy()
+    .collect()
+    .pivot(
+        index="car"
+        ,on="variable"
+        ,values="value"
+        ,aggregate_function="first"
     )
-    ,iterator
+    .lazy()
 )
 
-df=pl.concat(list(df))
+mtcars=q.collect()
 
-print(df)
+print(mtcars)
