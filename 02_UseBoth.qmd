@@ -156,7 +156,11 @@ print(table)
 
 ## 3. Summarize Generalized by Variable Type with Across
 
+In this example we want to generate means by group (like in example 1), but across a set of columns described by a selection criteria (i.e., not by name).
+
 ### R Version
+
+As before, we specify the grouping via `group_by()` and generate the means within `summarize()`. In order to create means for several variables not explicitly specified we can utilize `across()`. To get means for all variables stored as doubles, we use the helper function `where()` in the `.cols` specification. Glue syntax in the `.names` specification allows us to rename all affected columns.
 ```{r}
 mtcars %>%
     group_by(cyl,gear) %>%
@@ -171,7 +175,7 @@ mtcars %>%
 ```
 
 ### Python Version
-Note that there are *many* selector functions available, as explained [here](https://docs.pola.rs/api/python/stable/reference/selectors.html). This is a good example of how a selector function (`cs.float()` in this case) works in conjunction with namaing methods, like `expr.name.suffix()` below. See other methods [here](https://docs.pola.rs/api/python/stable/reference/expressions/name.html).
+The Python version looks very similar to the R version and has the same basic structure as in example 1. Here, though, instead of specifying a column with `pl.col()` we indicate that we want all columns stored as floats by using `cs.float()`. Note that there are *many* selector functions available, as explained [here](https://docs.pola.rs/api/python/stable/reference/selectors.html). The name method `name.suffix()` is used to rename all affected variables. See other name methods [here](https://docs.pola.rs/api/python/stable/reference/expressions/name.html).
 ```{python}
 import polars.selectors as cs
 
@@ -184,6 +188,114 @@ q=(
 table=q.collect()
 
 print(table)
+
+```
+
+## 4. Conditional Recode
+
+In this example we use if/else if/else logic to create a string recode of the numeric variable `mpg`.
+
+### R Version
+
+In the Tidy R approach we deploy `case_when()` inside of `mutate()` to create a recode with cascading conditional logic.
+```{r}
+mtcars %>%
+    mutate(
+        mpg.cat=case_when(
+            mpg<10~"very bad"
+            ,mpg<15~"bad"
+            ,mpg<20~"okay"
+            ,mpg<25~"good"
+            ,TRUE~"great"
+        )
+    ) %>%
+    arrange(desc(mpg))
+
+```
+
+### Python Version
+
+The Python version is quite a bit more wordy. Note that `pl.lit()` is needed here to resolve ambiguity in the way column references can appear as strings in `then()`---in other words, we're indicating we want the recoded values to be the provided strings, not the values of columns represented by those strings.
+```{python}
+q=(
+    mtcars
+    .with_columns(
+        pl.when(pl.col("mpg")<10).then(pl.lit("very bad"))
+        .when(pl.col("mpg")<15).then(pl.lit("bad"))
+        .when(pl.col("mpg")<20).then(pl.lit("okay"))
+        .when(pl.col("mpg")<25).then(pl.lit("good"))
+        .otherwise(pl.lit("great"))
+        .alias("mpg.cat")
+    )
+    .sort("mpg",descending=True)
+)
+
+df=q.collect()
+
+print(df)
+
+```
+
+## 5. Pivots
+In this example we start with `mtcars` (a version with rownames mapped to the column `car`), pivot to a long file and then back to wide.
+
+### R Version
+
+Here we use very simple forms of `pivot_longer()` and `pivot_wider()`.
+```{r}
+library(tidyr)
+library(tibble)
+
+cars<-rownames_to_column(mtcars,"car") %>%
+  pivot_longer(
+    cols=where(is.numeric)
+    ,names_to="variable"
+    ,values_to="value"
+  )
+
+print(cars)
+
+mtcars_w_names<-cars %>%
+  pivot_wider(
+    id_cols=car
+    ,names_from="variable"
+    ,values_from="value"
+  )
+
+print(mtcars_w_names)
+
+```
+
+### Python Version
+With polars, going from wide to long is an [unpivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html) and long to wide is a [pivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html). Note that the `pivot()` is only available in eager mode, as shown below.
+```{python}
+import polars.selectors as cs
+
+q=(
+    pl.scan_csv("mtcars_w_names.csv")
+    .unpivot(
+        on=cs.numeric()
+        ,index="car"
+        ,variable_name="variable"
+        ,value_name="value"
+    )
+)
+
+cars=q.collect()
+
+print(cars)
+
+mtcars_w_names=(
+    cars
+    .pivot(
+        index="car"
+        ,on="variable"
+        ,values="value"
+        ,aggregate_function=None
+    )
+)
+
+print(mtcars_w_names)
 
 ```
 
@@ -292,46 +404,6 @@ list(it.starmap(doit,parms))
 
 ```
 
-## 6. Conditional Recode
-
-### R Version
-```{r}
-mtcars %>%
-    mutate(
-        mpg.cat=case_when(
-            mpg<10~"very bad"
-            ,mpg<15~"bad"
-            ,mpg<20~"okay"
-            ,mpg<25~"good"
-            ,TRUE~"great"
-        )
-    ) %>%
-    arrange(desc(mpg))
-
-```
-
-### Python Version
-This is clearly more wordy than the r version above. Note that `pl.lit()` seemed to be necessary for creating the recode as a string (maybe because the column used in the conditional is a float?).
-```{python}
-q=(
-    mtcars
-    .with_columns(
-        pl.when(pl.col("mpg")<10).then(pl.lit("very bad"))
-        .when(pl.col("mpg")<15).then(pl.lit("bad"))
-        .when(pl.col("mpg")<20).then(pl.lit("okay"))
-        .when(pl.col("mpg")<25).then(pl.lit("good"))
-        .otherwise(pl.lit("great"))
-        .alias("mpg.cat")
-    )
-    .sort("mpg",descending=True)
-)
-
-df=q.collect()
-
-print(df)
-
-```
-
 ## 7. Stack Data Frames by List Binding with Map and Anonymous Function
 What I'm achieving with this example---returning `mtcars`---isn't very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I'm reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
 
@@ -431,83 +503,3 @@ print(df)
 
 ```
 
-## 9. Pivots
-In this example I start with `mtcars` (a version with rownames mapped to the column `car`), pivot to a long file and then back to wide.
-
-### R Version
-```{r}
-library(tidyr)
-library(tibble)
-
-cars<-rownames_to_column(mtcars,"car") %>%
-  pivot_longer(
-    cols=where(is.numeric)
-    ,names_to="variable"
-    ,values_to="value"
-  )
-
-print(cars)
-
-mtcars<-cars %>%
-  pivot_wider(
-    id_cols=car
-    ,names_from="variable"
-    ,values_from="value"
-  )
-
-print(mtcars)
-
-```
-
-### Python Version
-With polars, going from wide to long is an [unpivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html) and long to wide is a [pivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html). Note that the lazy version of a pivot has a different structure in which it's preceeded by `collect()` and followed by `lazy()`---I've included an eager version for contrast.
-```{python}
-import polars.selectors as cs
-
-mtcars=pl.scan_csv("mtcars_w_names.csv")
-
-q=(
-    mtcars
-    .unpivot(
-        on=cs.numeric()
-        ,index="car"
-        ,variable_name="variable"
-        ,value_name="value"
-    )
-)
-
-cars=q.collect()
-
-print(cars)
-
-#lazy
-q=(
-    cars.lazy()
-    .collect()
-    .pivot(
-        index="car"
-        ,on="variable"
-        ,values="value"
-        ,aggregate_function=None
-    )
-    .lazy()
-)
-
-mtcars=q.collect()
-
-print(mtcars)
-
-#eager
-mtcars=(
-    cars
-    .pivot(
-        index="car"
-        ,on="variable"
-        ,values="value"
-        ,aggregate_function=None
-    )
-)
-
-print(mtcars)
-
-```

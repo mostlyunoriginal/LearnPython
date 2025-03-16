@@ -45,3 +45,11 @@ cyl=(
     .unique()
     .sort()
 )
+
+df=pl.DataFrame({
+    "test": ['a','b','c']
+}).with_columns(
+    pl.when(pl.col("test")=="a").then(pl.lit("astring")).otherwise("test")
+)
+
+print(df)
