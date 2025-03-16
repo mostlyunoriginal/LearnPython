@@ -299,11 +299,68 @@ print(mtcars_w_names)
 
 ```
 
-## 4. Function for n & pct by Grouping Variables
-In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.
+## 6. Joins
+
+In this example we will show the various join types with two distinct but overlapping subsets of `mtcars`: cars with 6-cylinder engines and those with horsepower less than 110.
 
 ### R Version
-I use dynamic dots (`...`) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings---this scales up better and is more comparable to the python version.
+
+This code is pretty self-explanatory.
+```{r}
+carsl<-mtcars %>%
+    rownames_to_column("car") %>%
+    filter(cyl==6) %>%
+    select(car,cyl)
+
+carsr<-mtcars %>%
+    rownames_to_column("car") %>%
+    filter(hp<110) %>%
+    select(car,hp)
+
+print(carsl)
+print(carsr)
+
+left_join(carsl,carsr,by="car")
+right_join(carsl,carsr,by="car")
+inner_join(carsl,carsr,by="car")
+full_join(carsl,carsr,by="car")
+anti_join(carsl,carsr,by="car")
+
+```
+
+### Python Version
+
+```{python}
+carsl=(
+    pl.scan_csv("mtcars_w_names.csv")
+    .filter(pl.col("cyl")==6)
+    .select("car","cyl")
+)
+
+carsr=(
+    pl.scan_csv("mtcars_w_names.csv")
+    .filter(pl.col("hp")<110)
+    .select("car","hp")
+)
+
+print(carsl.collect())
+print(carsr.collect())
+
+print(carsl.join(carsr,on="car",how="left").collect())
+print(carsl.join(carsr,on="car",how="right").collect())
+print(carsl.join(carsr,on="car",how="inner").collect())
+print(carsl.join(carsr,on="car",how="full",coalesce=True).collect())
+print(carsl.join(carsr,on="car",how="anti").collect())
+
+```
+
+## 7. Function for n & pct by Grouping Variables
+
+Here we want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.
+
+### R Version
+
+We use dynamic dots (`...`) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings---this scales up better and is more comparable to the python version.
 ```{r}
 library(rlang)
 library(purrr)
@@ -341,7 +398,8 @@ doit2(mtcars,"cyl","gear")
 ```
 
 ### Python Version
-The version below gets very close! The only differences are that the python version of `doit()` doesn't work as-is if 0 variables are provided (though it could be modifed to only conditionally invoke the `group_by` context) and the variable names are passed as strings (i.e., this doesn't seem to be optional as with the tidy versions). This latter point should actually simplify some situations that are complex due to data mask ambiguities in tidy functions.
+
+The version below gets very close! The only differences are that the python version of `doit()` doesn't work as-is if 0 variables are provided, and the variable names are passed as strings (i.e., this isn't optional as with the tidy versions). This latter point should actually simplify some situations that are complex due to data mask ambiguities in tidy functions.
 ```{python}
 def doit(df,*argv):
     q=(
@@ -366,11 +424,13 @@ doit(mtcars,"cyl","gear")
 
 ```
 
-## 5. Iterate a Custom Function
-Here I want to apply the `doit` functions over parameters.
+## 8. Iterate a Custom Function
+
+Here we want to apply the `doit` functions over parameters.
 
 ### R Version
-I use `purrr::pmap()` in the R version with a list of parameters. Since I defined the R version of `doit` to take naked symbols, the mapped version is kind of clunky---a cleaner alternative based on `doit2` highlights the point.
+
+We can use `purrr::pmap()` in the R version with a list of parameters. Since we defined the R version of `doit` to take naked symbols, the mapped version is kind of clunky---a cleaner alternative based on `doit2` highlights this point.
 ```{r}
 parms<-list(
     list(mtcars,mtcars)
@@ -381,16 +441,18 @@ parms<-list(
 pmap(parms,doit)
 
 parms2<-list(
-    c("cyl","cyl")
+    list(mtcars,mtcars)
+    ,c("cyl","cyl")
     ,c("gear","am")
 )
 
-pmap(parms2,doit2,df=mtcars)
+pmap(parms2,doit2)
 
 ```
 
 ### Python Version
-Super simple! I combine 3 parameter lists into a single iterator object via `zip`---I can then map `doit` over `parms` via `itertools.starmap`.
+
+Here we combine 3 parameter lists into a single iterator object via `zip`---we can then map `doit` over `parms` via `itertools.starmap`.
 ```{python}
 import itertools as it
 
@@ -404,10 +466,12 @@ list(it.starmap(doit,parms))
 
 ```
 
-## 7. Stack Data Frames by List Binding with Map and Anonymous Function
-What I'm achieving with this example---returning `mtcars`---isn't very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I'm reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
+## 9. Stack Data Frames by List Binding with Map and Anonymous Function
+
+What we're achieving with this example---returning `mtcars`---isn't very useful, but it illustrates a common task: mapping an anonymous function over a vector to create a list of data frames which are subsequently stacked together via row binding. In other words, in this example we're reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
 
 ### R Version
+
 Pretty straight forward. Note that parms is a vector here.
 ```{r}
 parms<-distinct(mtcars,cyl) %>%
@@ -429,11 +493,12 @@ print(df)
 ```
 
 ### Python Version
+
 This is extremely similar. Note that I'm pulling from the csv of `mtcars` to utilize eager evaluation (for simplicity).
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
 
-parms=mtcars.get_column("cyl").unique()
+iterator=mtcars.get_column("cyl").unique()
 
 df=map(
     lambda x: (
@@ -441,7 +506,7 @@ df=map(
         .filter(pl.col("cyl")==x)
         .sort("mpg",descending=True)
     )
-    ,parms
+    ,iterator
 )
 
 df=pl.concat(list(df))
@@ -450,10 +515,12 @@ print(df)
 
 ```
 
-## 8. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (`...`)
+## 10. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (`...`)
+
 This example generalizes the previous one to use a data frame with any number of columns (here I'm just using 2) to parameterize the mapping.
 
 ### R Version
+
 Dynamic dots are captured in the list `parms` within the function and column values are referenced as elements of that list.
 ```{r}
 parms<-distinct(mtcars,cyl,gear)
@@ -474,7 +541,8 @@ print(df)
 ```
 
 ### Python Version
-This is very similar to the R version above. The key is that each row of the data frame `parms` is turned into a dictionary (i.e., has the form `{'key1':_key1val_,...,'keyk':_keykval_}`). `iterator` is then a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single row of all parameters needed in the body of the anonymous function with the single parameter `dctnry`. The parameter values can be referenced by the original `parms` data frame variable name in the function body via the dictionary method `get()`.
+
+This is very similar to the R version above. The key is that each row of the data frame `parms` is turned into a dictionary (i.e., has the form `{'key1':_key1val_,...,'keyk':_keykval_}`). `iterator` is then a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows us to capture a single row of all parameters needed in the body of the anonymous function with the single parameter `dctnry`. The parameter values can be referenced by the original `parms` data frame variable name in the function body via the dictionary method `get()`. Note that there is a Polars DataFrame method `map_rows()` that does something similar, but there's no way to preserve variable names for reference inside the function, so this approach seems preferrable.
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
 
@@ -486,7 +554,7 @@ parms=(
 
 iterator=list(parms.iter_rows(named=True))
 
-df=map(
+dfs=map(
     lambda dctnry: (
         mtcars
         .filter(
@@ -497,7 +565,7 @@ df=map(
     ,iterator
 )
 
-df=pl.concat(list(df))
+df=pl.concat(list(dfs))
 
 print(df)
 

@@ -1,6 +1,4 @@
 library(tidyverse)
 
-cyl<-mtcars %>%
-  distinct(cyl) %>%
-  arrange(cyl) %>%
-  pull()
+filter(mtcars,cyl==6) %>% nrow()
+filter(mtcars,hp>150) %>% nrow()
