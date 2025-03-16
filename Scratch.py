@@ -1,29 +1,47 @@
 import polars as pl
-import polars.selectors as cs
 
 mtcars=pl.scan_csv("mtcars_w_names.csv")
 
-q=(
+alist=[mtcars]
+
+astring="BOOM"
+anotherstring=f"here i've insterted a bom-{astring}"
+print(anotherstring)
+
+abiginteger=1_000_000_000
+print(abiginteger)
+teststring=f"hmmm...{abiginteger}"
+print(teststring)
+
+print(anotherstring.title())
+
+mtcars=pl.read_csv("mtcars.csv")
+
+parms=(
     mtcars
-    .unpivot(cs.numeric(),index="car")
+    .group_by("cyl","gear")
+    .agg()
 )
 
-cars=q.collect()
+iterator=list(parms.iter_rows(named=True))
 
-print(cars)
-
-q=(
-    cars.lazy()
-    .collect()
-    .pivot(
-        index="car"
-        ,on="variable"
-        ,values="value"
-        ,aggregate_function="first"
+df=map(
+    lambda x: (
+        mtcars
+        .filter(
+            (pl.col("cyl")==x['cyl']) & (pl.col("gear")==x['gear'])
+        )
     )
-    .lazy()
+    ,iterator
 )
 
-mtcars=q.collect()
+df=pl.concat(list(df))
 
-print(mtcars)
+print(df)
+
+cyl=(
+    mtcars
+    .get_column("cyl")
+    .unique()
+    .sort()
+)

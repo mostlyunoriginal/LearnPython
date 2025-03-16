@@ -11,12 +11,55 @@ abstract: >
     For tidyverse syntax, refer to the `Reference` page for each package under <https://www.tidyverse.org/>. For Polars, consult the [user guide](https://docs.pola.rs/) for high-level information, and dive into [the API reference](https://docs.pola.rs/api/python/dev/reference/index.html) for full detail and syntax.
 ---
 
+## Background
+
+Before diving into the examples below, it's important to acknowledge some general differences between R and Python and specific differences in style and approach between Tidy- and Polars-style data manipulation. First and foremost: Python has a strong object orientation while R is essentially a functional language. The practical impact of that difference here is that Python objects are manipulated, or their attributes extracted, by way of methods, while R objects are inputs and outputs of functions. But Python uses functions too, and in fact methods are themselves functions, so this can be very confusing!
+
+What is a method, then? In simple terms, it's a function defined as part of the blueprint for a given type (or 'class') of object. A Polars DataFrame is a class of object, and there are certain functions defined in that class---these are the Polars DataFrame methods. By creating a *specific* DataFrame, we 'instantiate' the class into an object, and we can deploy [a predefined set of methods](https://docs.pola.rs/api/python/dev/reference/dataframe/index.html) to do things with or to that object.
+
+In both R and Python we often want to do several operations in a row without distinct assignments for each intermediate step of a process. In R---and especially in the Tidy style of R programming---we can use piping with either the `magrittr` or base pipes (`%>%` and `|>`, respectively) to achieve this. The resulting pipeline starts with an object, passes that object into a function which returns a new object which is passed into another function, and so on and so forth until the desired object is returned by the final function in the pipeline and is captured with an assignment, returned to the console, or passed as input to another pipeline or function. Consider the following example.
+
 ```{r}
+#| output: false
+#| echo: false
+
+library(dplyr)
+```
+```{r}
+#| output: false
+
+cyls<-mtcars %>% #1, 5
+  distinct(cyl) %>% #2
+  arrange(cyl) %>% #3
+  pull() #4
+
+```
+
+Here, we start with the data frame `mtcars` (1), which is piped as input to the `distinct()` function along with the column reference `cyl` (2), which returns a data frame containing only the column `cyl` and one row for each distinct value. This is piped as input to `arrange()` (3) along with a column reference to `cyl`, which returns a sorted data frame. This is piped into `pull()` (4), which extracts a single column (the only one there: `cyl`) as a vector. This final object is then assigned to the environment variable `cyls` (5). Now consider the Python version which utilizes a technique called 'method chaining'.
+
+```{python}
 #| echo: false
 #| output: false
 
-#library(tidyverse)
+import polars as pl
+
+mtcars=pl.read_csv("mtcars.csv")
+
 ```
+
+```{python}
+#| output: false
+
+cyls=( #5
+    mtcars #1
+    .get_column("cyl") #2
+    .unique() #3
+    .sort() #4
+)
+
+```
+
+Here, we start with `mtcars`, a Polars DataFrame (1). We then apply the `get_column()` method with a reference to the column `cyl` (2), yielding a Polars Series (analogous to the atomic vectors that form the columns of data frames in R). The Series method `unique()` is then applied (3) to yield a new Series with only the distinct values of `cyl`. We then apply the Series method `sort()` to sort our Series by its values (4). This series is assigned to the variable `cyls` (5).
 
 ## 1. Basic Summarize without Generalization
 
@@ -206,7 +249,7 @@ pmap(parms2,doit2,df=mtcars)
 ```
 
 ### Python Version
-Super simple! I combine 3 parameter series into a single iterator object via `zip`---I can then map `doit` over `parms` via `itertools.starmap`.
+Super simple! I combine 3 parameter lists into a single iterator object via `zip`---I can then map `doit` over `parms` via `itertools.starmap`.
 ```{python}
 import itertools as it
 
@@ -330,7 +373,7 @@ print(df)
 ```
 
 ### Python Version
-This is very similar to the R version above. Note that I was originally thinking I would need `itertools.starmap()` here, but it proved unnecessary. The key is that `iterator` is a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single dictionary with `x` for each iteration, and the variable values can be referenced by variable name in the function body as `x['name']`.
+This is very similar to the R version above. The key is that each row of the data frame `parms` is turned into a dictionary (i.e., has the form `{'key1':_key1val_,...,'keyk':_keykval_}`). `iterator` is then a list of dictionaries (`iter_rows()` returns dictionaries when `named=True`) which allows me to capture a single row of all parameters needed in the body of the anonymous function with the single parameter `dctnry`. The parameter values can be referenced by the original `parms` data frame variable name in the function body via the dictionary method `get()`.
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
 
@@ -343,10 +386,11 @@ parms=(
 iterator=list(parms.iter_rows(named=True))
 
 df=map(
-    lambda x: (
+    lambda dctnry: (
         mtcars
         .filter(
-            (pl.col("cyl")==x['cyl']) & (pl.col("gear")==x['gear'])
+            (pl.col("cyl")==dctnry.get('cyl')) & 
+            (pl.col("gear")==dctnry.get('gear'))
         )
     )
     ,iterator
