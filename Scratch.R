@@ -1,6 +1,6 @@
 library(tidyverse)
 
 cyl<-mtcars %>%
-  distinpuct(cyl) %>%
+  distinct(cyl) %>%
   arrange(cyl) %>%
   pull()

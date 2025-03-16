@@ -1,7 +1,9 @@
 ---
 title: "Recreating Some Tidy-Style R Operations with Python and Polars"
 date: 2025-03-14
-format: html
+format: 
+    html:
+        theme: journal
 author:
     - name: G. Lance Couzens
       email: gcouzens@rti.org  
@@ -52,18 +54,42 @@ mtcars=pl.read_csv("mtcars.csv")
 
 cyls=( #5
     mtcars #1
-    .get_column("cyl") #2
-    .unique() #3
-    .sort() #4
+    .unique("cyl") #2
+    .sort("cyl") #3
+    .get_column("cyl") #4
 )
 
 ```
 
-Here, we start with `mtcars`, a Polars DataFrame (1). We then apply the `get_column()` method with a reference to the column `cyl` (2), yielding a Polars Series (analogous to the atomic vectors that form the columns of data frames in R). The Series method `unique()` is then applied (3) to yield a new Series with only the distinct values of `cyl`. We then apply the Series method `sort()` to sort our Series by its values (4). This series is assigned to the variable `cyls` (5).
+Here, we start with `mtcars`, a Polars DataFrame (1). We then apply the `unique()` method with a reference to the column `cyl` (2), yielding a Polars DataFrame containing the distinct values of `cyl` (note that it still contains all the other variables too!). Calling the `sort()` method sorts the rows by the values of `cyl` (3). The Polars DataFrame method `get_column()` (4) extracts a single column and yields a Polars Series (analogous to the atomic vectors that comprise R data frame columns). The resulting Series is assigned to the variable `cyls` (5).
 
-## 1. Basic Summarize without Generalization
+Both of these code blocks look quite similar, and the Python version should feel familiar to anyone who employs the Tidy-style of programming in R. Now that we've seen method chaining in action we can introduce a twist that unlocks some additional efficiency and that may seem strange compared to the Tidy style. The Python block above utilizes what's called 'eager evaluation', which means the code inside `cyls=(...)` is immediately evaluated and in exactly the manner we have specified. However, Polars is actually implemented in Rust (a high performance systems programming language) and has a query optimization capability that we can exploit via something called 'lazy evaluation'. The following 'lazy' alternative to the previous example gathers our instructions, performs query optimization (yielding a 'query plan'), and ultimately executes an optimized query only when we invoke the `collect()` method (a method of Polars LazyFrames which result from invoking the `lazy()` method of a regular Polars DataFrame).
+
+```{python}
+#| output: false
+
+cyls=(
+    mtcars
+    .lazy()
+    .unique("cyl")
+    .sort("cyl")
+    .collect()
+    .get_column("cyl")
+)
+
+```
+
+Note that Polars LazyFrames do not have a `get_column()` method like DataFrames do---it can therefore only be invoked *after* collection. The advantages of lazy evaluation in this trivial example would not be noticeable but could be significant depending on the size of the data and the complexity of the query. Lazy evaluation also allows for efficient processing of larger-than-memory data frames. See the [User guide](https://docs.pola.rs/user-guide/lazy/) for more detail. This approach may seem familiar to anyone who has used the `dtplyr` R package which allows the user to proved `dplyr` syntax which is translated into `data.table` (which is written primarily in C and is much faster than `dplyr`) under the hood.
+
+Without further ado, let's dive into some examples.
+
+## 1. Basic Summarize without Generalization across Variables
+
+Here, we take on a very simple and very common task: calculating the mean of a continuous variable (`mpg`) by the levels of a categorical variable (`cyl`).
 
 ### R Version
+
+The Tidy approach utilizes a pipeline comprised of the `mtcars` data frame and the `group_by()` and `summarize()` functions. Note that these functions take a data frame (or tibble) as the first argument, but prevailing style allows this to be passed implicitly (as is done here).
 ```{r}
 library(dplyr)
 
@@ -76,17 +102,16 @@ print(table)
 ```
 
 ### Python Version
-I'm using polars instead of pandas as it feels more natural coming from Tidy-style R programming. I'm invoking lazy evaluation (as opposed to eager) by using a lazy frame. This is actually more similar to `dtplyr` than `dplyr`. A query plan is assembled as `q` and then evaluated and the result saved to `table`. This 'lazy' approach allows polars to do its own query optimization behind the scenes.
 
-While there is no pipe analogous to `%>%` or `|>`, the method chaining approach used below *feels* very familiar.
+The Polars approach below begins by reading the R `mtcars` data frame into the Polars LazyFrame `mtcars`. The LazyFrame method `group_by()` is invoked followed by the `agg()` method. `agg()` contains an expression that is itself a method chain which yields the mean values for each group as the new variable `mpg.mean`. `table` is a Polars DataFrame realized as the result of evaluating an optimized query plan (via `collect()`).
 ```{python}
 import polars as pl
 
-mtcars=pl.DataFrame(r.mtcars).lazy()
+mtcars=pl.LazyFrame(r.mtcars)
 
 q=(
     mtcars
-    .group_by(pl.col("cyl"))
+    .group_by("cyl")
     .agg(pl.col("mpg").mean().alias("mpg.mean"))
 )
 
@@ -98,8 +123,11 @@ print(table)
 
 ## 2. Basic Mutate with Grouping and without Generalization
 
+Here we want to add a new variable to our data frame---the new variable is the ratio of each value of `mpg` relative to the mean value for the group (defined by the levels of the variable `cyl`).
+
 ### R Version
-In R I can create a recode via `mutate()` that utilizes both group-level statistics and record-level data. This can be done in a single step with very little code.
+
+In R I can create the new variable with a call to `mutate()` that utilizes both group-level statistics and record-level data. This can be done in a single step with very little code.
 ```{r}
 table<-mtcars %>%
     group_by(cyl) %>%
@@ -110,7 +138,8 @@ print(table)
 ```
 
 ### Python Version
-With polars, we can't mix the `group_by` and `with_columns` contexts. But, while `group_by` and `with_columns` contexts can't be mixed, grouping can be incorporated into the `with_columns` (or `select`) context via the window function `over()`. This is actually *more* powerful than `group_by() %>% mutate()` in R because you can have a different groupings across expressions in a common `with_columns` context.
+
+The Python version uses the `with_columns()` LazyFrame method. Here, unlike in the R version, the grouping is baked into the recode expression itself by way of `over()`. Aside from looking a bit different, the Polars approach is more powerful because each expression can utilize its own grouping. Note that the Polars documentation utilizes a 'contexts' and 'expressions' framework to describe what could also be referred to as methods or method chains. In this example, `with_columns()` is the context in which the expression yielding the new variable `rel.mpg` is nested.
 ```{python}
 q=(
     mtcars
