@@ -177,8 +177,8 @@ Attaching package: 'dplyr'</code></pre>
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
 │ 4.0 ┆ 26.663636 │
-│ 8.0 ┆ 15.1      │
 │ 6.0 ┆ 19.742857 │
+│ 8.0 ┆ 15.1      │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
@@ -308,14 +308,14 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
-│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
-│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
-│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
 │ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 │ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
+│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 │ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
 </div>
@@ -326,7 +326,7 @@ argument.</code></pre>
 <p>In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.</p>
 <section id="r-version-3" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-3">R Version</h3>
-<p>I use dynamic dots (<code>...</code>) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (<code>doit()</code>); an alternative version (<code>doit2()</code>) also uses dynamic dots, but with the intention to call with variable names provided as strings–this scales up better and is more comparable to the python version.</p>
+<p>I use dynamic dots (<code>...</code>) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (<code>doit()</code>); an alternative version (<code>doit2()</code>) also uses dynamic dots, but with the intention to call with variable names provided as strings—this scales up better and is more comparable to the python version.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -485,7 +485,7 @@ Attaching package: 'purrr'</code></pre>
 <p>Here I want to apply the <code>doit</code> functions over parameters.</p>
 <section id="r-version-4" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-4">R Version</h3>
-<p>I use <code>purrr::pmap()</code> in the R version with a list of parameters. Since I defined the R version of <code>doit</code> to take naked symbols, the mapped version is kind of clunky–a cleaner alternative based on <code>doit2</code> highlights the point.</p>
+<p>I use <code>purrr::pmap()</code> in the R version with a list of parameters. Since I defined the R version of <code>doit</code> to take naked symbols, the mapped version is kind of clunky—a cleaner alternative based on <code>doit2</code> highlights the point.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>parms<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(mtcars,mtcars)</span>
@@ -554,7 +554,7 @@ Attaching package: 'purrr'</code></pre>
 </section>
 <section id="python-version-4" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-4">Python Version</h3>
-<p>Super simple! I combine 3 parameter series into a single iterator object via <code>zip</code>–I can then map <code>doit</code> over <code>parms</code> via <code>itertools.starmap</code>.</p>
+<p>Super simple! I combine 3 parameter series into a single iterator object via <code>zip</code>—I can then map <code>doit</code> over <code>parms</code> via <code>itertools.starmap</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools <span class="im">as</span> it</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -697,7 +697,7 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 </section>
 <section id="stack-data-frames-by-list-binding-with-map-and-anonymous-function" class="level2">
 <h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-map-and-anonymous-function">7. Stack Data Frames by List Binding with Map and Anonymous Function</h2>
-<p>What I’m achieving with this example–returning <code>mtcars</code>–isn’t very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I’m reassembling <code>mtcars</code> by stacking together portions returned from each iteration of <code>map</code>.</p>
+<p>What I’m achieving with this example—returning <code>mtcars</code>—isn’t very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I’m reassembling <code>mtcars</code> by stacking together portions returned from each iteration of <code>map</code>.</p>
 <section id="r-version-6" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-6">R Version</h3>
 <p>Pretty straight forward. Note that parms is a vector here.</p>
@@ -889,17 +889,17 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 │ ---               ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
 │ str               ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
 ╞═══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
-│ Hornet Sportabout ┆ 18.7 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
-│ Duster 360        ┆ 14.3 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
-│ Merc 450SE        ┆ 16.4 ┆ 8   ┆ 275.8 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 3    │
-│ Merc 450SL        ┆ 17.3 ┆ 8   ┆ 275.8 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 3    │
-│ Merc 450SLC       ┆ 15.2 ┆ 8   ┆ 275.8 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 3    │
-│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
-│ Fiat X1-9         ┆ 27.3 ┆ 4   ┆ 79.0  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
-│ Volvo 142E        ┆ 21.4 ┆ 4   ┆ 121.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
 │ Porsche 914-2     ┆ 26.0 ┆ 4   ┆ 120.3 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 2    │
 │ Lotus Europa      ┆ 30.4 ┆ 4   ┆ 95.1  ┆ … ┆ 1   ┆ 1   ┆ 5    ┆ 2    │
-│ Ferrari Dino      ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
+│ Toyota Corona     ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Datsun 710        ┆ 22.8 ┆ 4   ┆ 108.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Merc 240D         ┆ 24.4 ┆ 4   ┆ 146.7 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 2    │
+│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Chrysler Imperial ┆ 14.7 ┆ 8   ┆ 440.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
+│ Dodge Challenger  ┆ 15.5 ┆ 8   ┆ 318.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
+│ AMC Javelin       ┆ 15.2 ┆ 8   ┆ 304.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
+│ Camaro Z28        ┆ 13.3 ┆ 8   ┆ 350.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
+│ Pontiac Firebird  ┆ 19.2 ┆ 8   ┆ 400.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
 └───────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
 </div>
 </div>
@@ -966,7 +966,7 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 </section>
 <section id="python-version-8" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-8">Python Version</h3>
-<p>With polars, going from wide to long is an <a href="https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html">unpivot</a> and long to wide is a <a href="https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html">pivot</a>. Note that the lazy version of a pivot has a different structure in which it’s preceeded by <code>collect()</code> and followed by <code>lazy()</code>–I’ve included an eager version for contrast.</p>
+<p>With polars, going from wide to long is an <a href="https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html">unpivot</a> and long to wide is a <a href="https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html">pivot</a>. Note that the lazy version of a pivot has a different structure in which it’s preceeded by <code>collect()</code> and followed by <code>lazy()</code>—I’ve included an eager version for contrast.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
 <span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a></span>

@@ -119,7 +119,7 @@ print(table)
 In both cases I want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.
 
 ### R Version
-I use dynamic dots (`...`) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings--this scales up better and is more comparable to the python version.
+I use dynamic dots (`...`) here to tunnel in the variables provided by the user in the function call. This is powerful and flexible, allowing for 0+ variables provided as naked symbols rather than strings (`doit()`); an alternative version (`doit2()`) also uses dynamic dots, but with the intention to call with variable names provided as strings---this scales up better and is more comparable to the python version.
 ```{r}
 library(rlang)
 library(purrr)
@@ -186,7 +186,7 @@ doit(mtcars,"cyl","gear")
 Here I want to apply the `doit` functions over parameters.
 
 ### R Version
-I use `purrr::pmap()` in the R version with a list of parameters. Since I defined the R version of `doit` to take naked symbols, the mapped version is kind of clunky--a cleaner alternative based on `doit2` highlights the point.
+I use `purrr::pmap()` in the R version with a list of parameters. Since I defined the R version of `doit` to take naked symbols, the mapped version is kind of clunky---a cleaner alternative based on `doit2` highlights the point.
 ```{r}
 parms<-list(
     list(mtcars,mtcars)
@@ -206,7 +206,7 @@ pmap(parms2,doit2,df=mtcars)
 ```
 
 ### Python Version
-Super simple! I combine 3 parameter series into a single iterator object via `zip`--I can then map `doit` over `parms` via `itertools.starmap`.
+Super simple! I combine 3 parameter series into a single iterator object via `zip`---I can then map `doit` over `parms` via `itertools.starmap`.
 ```{python}
 import itertools as it
 
@@ -261,7 +261,7 @@ print(df)
 ```
 
 ## 7. Stack Data Frames by List Binding with Map and Anonymous Function
-What I'm achieving with this example--returning `mtcars`--isn't very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I'm reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
+What I'm achieving with this example---returning `mtcars`---isn't very useful, but it illustrates something I do a lot: mapping an anonymous function over a vector to create a list of data frames which I subsequently stack together via row binding. In other words, in this example I'm reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
 
 ### R Version
 Pretty straight forward. Note that parms is a vector here.
@@ -387,7 +387,7 @@ print(mtcars)
 ```
 
 ### Python Version
-With polars, going from wide to long is an [unpivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html) and long to wide is a [pivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html). Note that the lazy version of a pivot has a different structure in which it's preceeded by `collect()` and followed by `lazy()`--I've included an eager version for contrast.
+With polars, going from wide to long is an [unpivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.unpivot.html) and long to wide is a [pivot](https://docs.pola.rs/api/python/dev/reference/dataframe/api/polars.DataFrame.pivot.html). Note that the lazy version of a pivot has a different structure in which it's preceeded by `collect()` and followed by `lazy()`---I've included an eager version for contrast.
 ```{python}
 import polars.selectors as cs
 
