@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.40">
+<meta name="generator" content="quarto-1.6.42">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -65,10 +65,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="02_UseBoth_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="02_UseBoth_files/libs/quarto-html/anchor.min.js"></script>
 <link href="02_UseBoth_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="02_UseBoth_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="02_UseBoth_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="02_UseBoth_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="02_UseBoth_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="02_UseBoth_files/libs/bootstrap/bootstrap-3119dc400b02922c27171a4b76b1a7ff.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="02_UseBoth_files/libs/bootstrap/bootstrap-32038c8e0a9a0d86d25d6a975d417f1a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -108,7 +108,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div>
   <div class="abstract">
     <div class="block-title">Abstract</div>
-    <p>In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations, and some scalable programming approaches, as equivalently as possible in both Tidy-style R and Polars-style Python. For tidyverse syntax, refer to the <code>Reference</code> page for each package under <a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>. For Polars, consult the <a href="https://docs.pola.rs/">user guide</a> for high-level information, and dive into <a href="https://docs.pola.rs/api/python/dev/reference/index.html">the API reference</a> for full detail and syntax.</p>
+    <p>In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations, and some scalable programming approaches, as equivalently as possible in both Tidy-style R and Polars-style Python. The target audience is existing Tidy R programmers looking to break into Python. The document is <em>not</em> intended as the sole guide for taking on Python, but rather as an exposure to accessible examples covering the basic building blocks of most data operations up to moderate complexity. For tidyverse syntax, refer to the <code>Reference</code> page for each package under <a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>. For Polars, consult the <a href="https://docs.pola.rs/">user guide</a> for high-level information, and dive into <a href="https://docs.pola.rs/api/python/dev/reference/index.html">the API reference</a> for full detail and syntax.</p>
   </div>
 </div>
 
@@ -151,8 +151,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Note that Polars LazyFrames do not have a <code>get_column()</code> method like DataFrames do—it can therefore only be invoked <em>after</em> collection. The advantages of lazy evaluation in this trivial example would not be noticeable but could be significant depending on the size of the data and the complexity of the query. Lazy evaluation also allows for efficient processing of larger-than-memory data frames. See the <a href="https://docs.pola.rs/user-guide/lazy/">User guide</a> for more detail. This approach may seem familiar to anyone who has used the <code>dtplyr</code> R package which allows the user to proved <code>dplyr</code> syntax which is translated into <code>data.table</code> (which is written primarily in C and is much faster than <code>dplyr</code>) under the hood.</p>
 <p>Without further ado, let’s dive into some examples.</p>
 </section>
-<section id="basic-summarize-without-generalization-across-variables" class="level2">
-<h2 class="anchored" data-anchor-id="basic-summarize-without-generalization-across-variables">1. Basic Summarize without Generalization across Variables</h2>
+<section id="data-manipulation" class="level1">
+<h1>Data Manipulation</h1>
+<section id="example-1.-basic-summarize-without-generalization-across-variables" class="level2">
+<h2 class="anchored" data-anchor-id="example-1.-basic-summarize-without-generalization-across-variables">Example 1. Basic Summarize without Generalization across Variables</h2>
 <p>Here, we take on a very simple and very common task: calculating the mean of a continuous variable (<code>mpg</code>) by the levels of a categorical variable (<code>cyl</code>).</p>
 <section id="r-version" class="level3">
 <h3 class="anchored" data-anchor-id="r-version">R Version</h3>
@@ -199,16 +201,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │ --- ┆ ---       │
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
-│ 8.0 ┆ 15.1      │
-│ 4.0 ┆ 26.663636 │
 │ 6.0 ┆ 19.742857 │
+│ 4.0 ┆ 26.663636 │
+│ 8.0 ┆ 15.1      │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
 </section>
 </section>
-<section id="basic-mutate-with-grouping-and-without-generalization" class="level2">
-<h2 class="anchored" data-anchor-id="basic-mutate-with-grouping-and-without-generalization">2. Basic Mutate with Grouping and without Generalization</h2>
+<section id="example-2.-basic-mutate-with-grouping-and-without-generalization" class="level2">
+<h2 class="anchored" data-anchor-id="example-2.-basic-mutate-with-grouping-and-without-generalization">Example 2. Basic Mutate with Grouping and without Generalization</h2>
 <p>Here we want to add a new variable to our data frame—the new variable is the ratio of each value of <code>mpg</code> relative to the mean value for the group (defined by the levels of the variable <code>cyl</code>).</p>
 <section id="r-version-1" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-1">R Version</h3>
@@ -275,8 +277,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 </section>
-<section id="summarize-generalized-by-variable-type-with-across" class="level2">
-<h2 class="anchored" data-anchor-id="summarize-generalized-by-variable-type-with-across">3. Summarize Generalized by Variable Type with Across</h2>
+<section id="example-3.-summarize-generalized-by-variable-type-with-across" class="level2">
+<h2 class="anchored" data-anchor-id="example-3.-summarize-generalized-by-variable-type-with-across">Example 3. Summarize Generalized by Variable Type with Across</h2>
 <p>In this example we want to generate means by group (like in example 1), but across a set of columns described by a selection criteria (i.e., not by name).</p>
 <section id="r-version-2" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-2">R Version</h3>
@@ -334,21 +336,21 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
-│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
-│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 │ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
-│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
+│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
+│ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
-│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
-│ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
+│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
 </div>
 </section>
 </section>
-<section id="conditional-recode" class="level2">
-<h2 class="anchored" data-anchor-id="conditional-recode">4. Conditional Recode</h2>
+<section id="example-4.-conditional-recode" class="level2">
+<h2 class="anchored" data-anchor-id="example-4.-conditional-recode">Example 4. Conditional Recode</h2>
 <p>In this example we use if/else if/else logic to create a string recode of the numeric variable <code>mpg</code>.</p>
 <section id="r-version-3" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-3">R Version</h3>
@@ -445,8 +447,8 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 </div>
 </section>
 </section>
-<section id="pivots" class="level2">
-<h2 class="anchored" data-anchor-id="pivots">5. Pivots</h2>
+<section id="example-5.-pivots" class="level2">
+<h2 class="anchored" data-anchor-id="example-5.-pivots">Example 5. Pivots</h2>
 <p>In this example we start with <code>mtcars</code> (a version with rownames mapped to the column <code>car</code>), pivot to a long file and then back to wide.</p>
 <section id="r-version-4" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-4">R Version</h3>
@@ -578,8 +580,8 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 </div>
 </section>
 </section>
-<section id="joins" class="level2">
-<h2 class="anchored" data-anchor-id="joins">6. Joins</h2>
+<section id="example-6.-joins" class="level2">
+<h2 class="anchored" data-anchor-id="example-6.-joins">Example 6. Joins</h2>
 <p>In this example we will show the various join types with two distinct but overlapping subsets of <code>mtcars</code>: cars with 6-cylinder engines and those with horsepower less than 110.</p>
 <section id="r-version-5" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-5">R Version</h3>
@@ -801,11 +803,11 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 │ Merc 230       ┆ null ┆ 95   │
 │ Fiat 128       ┆ null ┆ 66   │
 │ …              ┆ …    ┆ …    │
-│ Mazda RX4      ┆ 6    ┆ null │
+│ Merc 280       ┆ 6    ┆ null │
 │ Mazda RX4 Wag  ┆ 6    ┆ null │
-│ Merc 280C      ┆ 6    ┆ null │
-│ Hornet 4 Drive ┆ 6    ┆ null │
 │ Ferrari Dino   ┆ 6    ┆ null │
+│ Mazda RX4      ┆ 6    ┆ null │
+│ Hornet 4 Drive ┆ 6    ┆ null │
 └────────────────┴──────┴──────┘</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(carsl.join(carsr,on<span class="op">=</span><span class="st">"car"</span>,how<span class="op">=</span><span class="st">"anti"</span>).collect())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -827,8 +829,11 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 </div>
 </section>
 </section>
-<section id="function-for-n-pct-by-grouping-variables" class="level2">
-<h2 class="anchored" data-anchor-id="function-for-n-pct-by-grouping-variables">7. Function for n &amp; pct by Grouping Variables</h2>
+</section>
+<section id="functional-programming" class="level1">
+<h1>Functional Programming</h1>
+<section id="example-7.-function-for-n-pct-by-grouping-variables" class="level2">
+<h2 class="anchored" data-anchor-id="example-7.-function-for-n-pct-by-grouping-variables">Example 7. Function for n &amp; pct by Grouping Variables</h2>
 <p>Here we want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.</p>
 <section id="r-version-6" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-6">R Version</h3>
@@ -986,8 +991,8 @@ Attaching package: 'purrr'</code></pre>
 </div>
 </section>
 </section>
-<section id="iterate-a-custom-function" class="level2">
-<h2 class="anchored" data-anchor-id="iterate-a-custom-function">8. Iterate a Custom Function</h2>
+<section id="example-8.-iterate-a-custom-function" class="level2">
+<h2 class="anchored" data-anchor-id="example-8.-iterate-a-custom-function">Example 8. Iterate a Custom Function</h2>
 <p>Here we want to apply the <code>doit</code> functions over parameters.</p>
 <section id="r-version-7" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-7">R Version</h3>
@@ -1106,8 +1111,8 @@ shape: (6, 6)
 </div>
 </section>
 </section>
-<section id="stack-data-frames-by-list-binding-with-map-and-anonymous-function" class="level2">
-<h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-map-and-anonymous-function">9. Stack Data Frames by List Binding with Map and Anonymous Function</h2>
+<section id="example-9.-stack-data-frames-by-list-binding-with-map-and-anonymous-function" class="level2">
+<h2 class="anchored" data-anchor-id="example-9.-stack-data-frames-by-list-binding-with-map-and-anonymous-function">Example 9. Stack Data Frames by List Binding with Map and Anonymous Function</h2>
 <p>What we’re achieving with this example—returning <code>mtcars</code>—isn’t very useful, but it illustrates a common task: mapping an anonymous function over a vector to create a list of data frames which are subsequently stacked together via row binding. In other words, in this example we’re reassembling <code>mtcars</code> by stacking together portions returned from each iteration of <code>map</code>.</p>
 <section id="r-version-8" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-8">R Version</h3>
@@ -1167,7 +1172,7 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4</code></
 </section>
 <section id="python-version-8" class="level3">
 <h3 class="anchored" data-anchor-id="python-version-8">Python Version</h3>
-<p>This is extremely similar. Note that I’m pulling from the csv of <code>mtcars</code> to utilize eager evaluation (for simplicity).</p>
+<p>This is extremely similar. Note that we’re pulling from the csv of <code>mtcars</code> to utilize eager evaluation (for simplicity).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="op">=</span>pl.read_csv(<span class="st">"mtcars.csv"</span>)</span>
 <span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1208,9 +1213,9 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4</code></
 </div>
 </section>
 </section>
-<section id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of-dots-..." class="level2">
-<h2 class="anchored" data-anchor-id="stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of-dots-...">10. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (<code>...</code>)</h2>
-<p>This example generalizes the previous one to use a data frame with any number of columns (here I’m just using 2) to parameterize the mapping.</p>
+<section id="example-10.-stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of-dots-..." class="level2">
+<h2 class="anchored" data-anchor-id="example-10.-stack-data-frames-by-list-binding-with-pmap-and-anonymous-function-of-dots-...">Example 10. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (<code>...</code>)</h2>
+<p>This example generalizes the previous one to use a data frame with any number of columns (here we’re just using 2) to parameterize the mapping.</p>
 <section id="r-version-9" class="level3">
 <h3 class="anchored" data-anchor-id="r-version-9">R Version</h3>
 <p>Dynamic dots are captured in the list <code>parms</code> within the function and column values are referenced as elements of that list.</p>
@@ -1296,25 +1301,26 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 <span id="cb88-24"><a href="#cb88-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
-┌──────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
-│                  ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
-│ ---              ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
-│ str              ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
-╞══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
-│ Mazda RX4        ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
-│ Mazda RX4 Wag    ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
-│ Merc 280         ┆ 19.2 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
-│ Merc 280C        ┆ 17.8 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
-│ Porsche 914-2    ┆ 26.0 ┆ 4   ┆ 120.3 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 2    │
-│ …                ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
-│ AMC Javelin      ┆ 15.2 ┆ 8   ┆ 304.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
-│ Camaro Z28       ┆ 13.3 ┆ 8   ┆ 350.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
-│ Pontiac Firebird ┆ 19.2 ┆ 8   ┆ 400.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
-│ Hornet 4 Drive   ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Valiant          ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-└──────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
+┌───────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
+│               ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
+│ ---           ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
+│ str           ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
+╞═══════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Porsche 914-2 ┆ 26.0 ┆ 4   ┆ 120.3 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 2    │
+│ Lotus Europa  ┆ 30.4 ┆ 4   ┆ 95.1  ┆ … ┆ 1   ┆ 1   ┆ 5    ┆ 2    │
+│ Ferrari Dino  ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
+│ Datsun 710    ┆ 22.8 ┆ 4   ┆ 108.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Merc 240D     ┆ 24.4 ┆ 4   ┆ 146.7 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 2    │
+│ …             ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Valiant       ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
+│ Mazda RX4     ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
+│ Mazda RX4 Wag ┆ 21.0 ┆ 6   ┆ 160.0 ┆ … ┆ 0   ┆ 1   ┆ 4    ┆ 4    │
+│ Merc 280      ┆ 19.2 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
+│ Merc 280C     ┆ 17.8 ┆ 6   ┆ 167.6 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 4    │
+└───────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
 </div>
 </div>
+</section>
 </section>
 </section>
 

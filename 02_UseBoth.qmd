@@ -8,9 +8,7 @@ author:
     - name: G. Lance Couzens
       email: gcouzens@rti.org  
 abstract: >
-    In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations, and some scalable programming approaches, as equivalently as possible in both Tidy-style R and Polars-style Python.
-
-    For tidyverse syntax, refer to the `Reference` page for each package under <https://www.tidyverse.org/>. For Polars, consult the [user guide](https://docs.pola.rs/) for high-level information, and dive into [the API reference](https://docs.pola.rs/api/python/dev/reference/index.html) for full detail and syntax.
+    In this document I provide several examples that demonstrate how to do most of the basic data manipulation operations, and some scalable programming approaches, as equivalently as possible in both Tidy-style R and Polars-style Python. The target audience is existing Tidy R programmers looking to break into Python. The document is *not* intended as the sole guide for taking on Python, but rather as an exposure to accessible examples covering the basic building blocks of most data operations up to moderate complexity. For tidyverse syntax, refer to the `Reference` page for each package under <https://www.tidyverse.org/>. For Polars, consult the [user guide](https://docs.pola.rs/) for high-level information, and dive into [the API reference](https://docs.pola.rs/api/python/dev/reference/index.html) for full detail and syntax.
 ---
 
 ## Background
@@ -83,7 +81,9 @@ Note that Polars LazyFrames do not have a `get_column()` method like DataFrames 
 
 Without further ado, let's dive into some examples.
 
-## 1. Basic Summarize without Generalization across Variables
+# Data Manipulation
+
+## Example 1. Basic Summarize without Generalization across Variables
 
 Here, we take on a very simple and very common task: calculating the mean of a continuous variable (`mpg`) by the levels of a categorical variable (`cyl`).
 
@@ -121,7 +121,7 @@ print(table)
 
 ```
 
-## 2. Basic Mutate with Grouping and without Generalization
+## Example 2. Basic Mutate with Grouping and without Generalization
 
 Here we want to add a new variable to our data frame---the new variable is the ratio of each value of `mpg` relative to the mean value for the group (defined by the levels of the variable `cyl`).
 
@@ -154,7 +154,7 @@ print(table)
 
 ```
 
-## 3. Summarize Generalized by Variable Type with Across
+## Example 3. Summarize Generalized by Variable Type with Across
 
 In this example we want to generate means by group (like in example 1), but across a set of columns described by a selection criteria (i.e., not by name).
 
@@ -191,7 +191,7 @@ print(table)
 
 ```
 
-## 4. Conditional Recode
+## Example 4. Conditional Recode
 
 In this example we use if/else if/else logic to create a string recode of the numeric variable `mpg`.
 
@@ -236,7 +236,7 @@ print(df)
 
 ```
 
-## 5. Pivots
+## Example 5. Pivots
 In this example we start with `mtcars` (a version with rownames mapped to the column `car`), pivot to a long file and then back to wide.
 
 ### R Version
@@ -299,7 +299,7 @@ print(mtcars_w_names)
 
 ```
 
-## 6. Joins
+## Example 6. Joins
 
 In this example we will show the various join types with two distinct but overlapping subsets of `mtcars`: cars with 6-cylinder engines and those with horsepower less than 110.
 
@@ -354,7 +354,9 @@ print(carsl.join(carsr,on="car",how="anti").collect())
 
 ```
 
-## 7. Function for n & pct by Grouping Variables
+# Functional Programming
+
+## Example 7. Function for n & pct by Grouping Variables
 
 Here we want a custom function to create simple, list-style frequency tables based on one or more variables provided by the user.
 
@@ -424,7 +426,7 @@ doit(mtcars,"cyl","gear")
 
 ```
 
-## 8. Iterate a Custom Function
+## Example 8. Iterate a Custom Function
 
 Here we want to apply the `doit` functions over parameters.
 
@@ -466,7 +468,7 @@ list(it.starmap(doit,parms))
 
 ```
 
-## 9. Stack Data Frames by List Binding with Map and Anonymous Function
+## Example 9. Stack Data Frames by List Binding with Map and Anonymous Function
 
 What we're achieving with this example---returning `mtcars`---isn't very useful, but it illustrates a common task: mapping an anonymous function over a vector to create a list of data frames which are subsequently stacked together via row binding. In other words, in this example we're reassembling `mtcars` by stacking together portions returned from each iteration of `map`.
 
@@ -494,7 +496,7 @@ print(df)
 
 ### Python Version
 
-This is extremely similar. Note that I'm pulling from the csv of `mtcars` to utilize eager evaluation (for simplicity).
+This is extremely similar. Note that we're pulling from the csv of `mtcars` to utilize eager evaluation (for simplicity).
 ```{python}
 mtcars=pl.read_csv("mtcars.csv")
 
@@ -515,9 +517,9 @@ print(df)
 
 ```
 
-## 10. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (`...`)
+## Example 10. Stack Data Frames by List Binding with pmap and Anonymous Function of Dots (`...`)
 
-This example generalizes the previous one to use a data frame with any number of columns (here I'm just using 2) to parameterize the mapping.
+This example generalizes the previous one to use a data frame with any number of columns (here we're just using 2) to parameterize the mapping.
 
 ### R Version
 
