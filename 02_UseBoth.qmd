@@ -4,6 +4,7 @@ date: 2025-03-14
 format: 
     html:
         theme: journal
+        self-contained: true
 author:
     - name: G. Lance Couzens
       email: gcouzens@rti.org  
