@@ -12,7 +12,7 @@ author:
 
 Let's compare the compute time needed for an equivalent operation between `Python` and `R`. The operation is to:\
 
-1. ingest a largeish csv file with 1M records and 250 columns of random normal variates plus one `ID` column,
+1. ingest a largeish csv file with 1M records and 1,000 columns of random normal variates plus one `ID` column,
 2. group by `ID` (100 records per `ID`),
 3. summarize as mean for each double/float column,
 4. filter to `ID`s with any one or more double/float column with a `mean > 0.4`, and
@@ -26,7 +26,10 @@ In Python, we will use `polars` with lazy evaluation. In `R`, we will use `dplyr
 
 library(tidyverse)
 
-data<-matrix(rnorm(1000000*250),nrow=1000000,ncol=250,byrow=T) %>%
+rows<-1000000
+cols<-1000
+
+data<-matrix(rnorm(rows*cols),nrow=rows,ncol=cols,byrow=T) %>%
   as.data.frame() %>%
   mutate(id=as.character(row_number() %% 10000))
 
@@ -63,6 +66,7 @@ Note that `data.table::fread()` is used for all R examples, as we're really just
 
 ```{r}
 library(tidyverse)
+library(hms)
 
 start<-Sys.time()
 
@@ -72,9 +76,9 @@ rows<-data.table::fread("big.csv") %>%
   filter(if_any(where(is.double),~.x>.4)) %>%
   nrow()
 
-elapsed<-Sys.time()-start
+end<-Sys.time()
 
-print(str_glue("{rows} rows returned\nelapsed time for query: {elapsed}"))
+print(str_glue("{rows} rows returned\nelapsed time for query: {as_hms(end-start)}"))
 ```
 
 ## dtplyr
@@ -83,22 +87,22 @@ This is stylistically the `R` version that is most similar to the `polars` appro
 ```{r}
 library(dtplyr,warn.conflicts=F)
 
-start_dt<-Sys.time()
+start<-Sys.time()
 
 big<-data.table::fread("big.csv")
 
 varnames<-setdiff(colnames(big),"id")
 
-rows_dt<-lazy_dt(big) %>%
+rows<-lazy_dt(big) %>%
   group_by(id) %>%
   summarize(across(all_of(varnames),mean),.groups="keep") %>%
   filter(if_any(all_of(varnames),~.x>.4)) %>%
   collect() %>%
   nrow()
 
-elapsed_dt<-Sys.time()-start_dt
+end<-Sys.time()
 
-print(str_glue("{rows_dt} rows returned\nelapsed time for query: {elapsed_dt}"))
+print(str_glue("{rows} rows returned\nelapsed time for query: {as_hms(end-start)}"))
 ```
 
 ## tidytable
@@ -106,15 +110,15 @@ print(str_glue("{rows_dt} rows returned\nelapsed time for query: {elapsed_dt}"))
 This should be computationally comparable to the `dtplyr` approach as both are deploying `data.table` behind the scenes, but this approach has the benefit of preserving the plain `dplyr` syntax, including the ability to use tidyselect helpers.
 
 ```{r}
-start_tt<-Sys.time()
+start<-Sys.time()
 
-rows_tt<-data.table::fread("big.csv") %>%
+rows<-data.table::fread("big.csv") %>%
   tidytable::group_by(id) %>%
   tidytable::summarize(tidytable::across(where(is.double),mean),.groups="keep") %>%
   tidytable::filter(tidytable::if_any(where(is.double),~.x>.4)) %>%
   nrow()
 
-elapsed_tt<-Sys.time()-start_tt
+end<-Sys.time()
 
-print(str_glue("{rows_tt} rows returned\nelapsed time for query: {elapsed_tt}"))
+print(str_glue("{rows} rows returned\nelapsed time for query: {as_hms(end-start)}"))
 ```
