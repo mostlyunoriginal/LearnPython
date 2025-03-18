@@ -27,6 +27,7 @@ write_csv(data,"big.csv")
 ```{python}
 import polars as pl
 import polars.selectors as cs
+import os
 
 q=(
     pl.scan_csv("big.csv")
@@ -36,4 +37,6 @@ q=(
 )
 
 print(q.collect().height())
+
+os.remove("big.csv")
 ```
