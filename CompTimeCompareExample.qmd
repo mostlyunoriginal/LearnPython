@@ -1,0 +1,39 @@
+---
+title: "Dplyr vs. Polars Efficiency Example"
+date: 2025-03-18
+format: 
+    html:
+        theme: journal
+        self-contained: true
+author:
+    - name: G. Lance Couzens
+      email: gcouzens@rti.org  
+---
+
+```{r}
+#| echo: false
+#| output: false
+
+library(tidyverse)
+
+#big data (1M rows, 1000 cols)
+data<-matrix(rnorm(1000000*1000),nrow=1000000,ncol=1000,byrow=T) %>%
+  as.data.frame() %>%
+  mutate(id=as.character(row_number() %% 10000))
+
+write_csv(data,"big.csv")
+```
+
+```{python}
+import polars as pl
+import polars.selectors as cs
+
+q=(
+    pl.scan_csv("big.csv")
+    .group_by("id")
+    .agg(cs.float().mean())
+    .filter(pl.any_horizontal(cs.float()>2.54))
+)
+
+print(q.collect().height())
+```

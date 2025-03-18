@@ -53,3 +53,14 @@ df=pl.DataFrame({
 )
 
 print(df)
+
+import polars as pl
+import polars.selectors as cs
+
+q=(
+    pl.scan_csv("mtcars.csv")
+    .filter(pl.any_horizontal(cs.float()>450))
+)
+
+check=q.collect()
+print(check)
