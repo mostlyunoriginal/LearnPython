@@ -25,18 +25,19 @@ write_csv(data,"big.csv")
 ```
 
 ```{python}
+
 import polars as pl
+
 import polars.selectors as cs
-import os
 
 q=(
     pl.scan_csv("big.csv")
     .group_by("id")
     .agg(cs.float().mean())
-    .filter(pl.any_horizontal(cs.float()>2.54))
+    .filter(pl.any_horizontal(cs.float()>.4))
 )
 
-print(q.collect().height())
+table=q.collect()
 
-os.remove("big.csv")
+print(table.height)
 ```
