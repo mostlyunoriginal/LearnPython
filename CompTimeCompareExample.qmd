@@ -16,8 +16,7 @@ author:
 
 library(tidyverse)
 
-#big data (1M rows, 1000 cols)
-data<-matrix(rnorm(1000000*1000),nrow=1000000,ncol=1000,byrow=T) %>%
+data<-matrix(rnorm(1000000*250),nrow=1000000,ncol=250,byrow=T) %>%
   as.data.frame() %>%
   mutate(id=as.character(row_number() %% 10000))
 
@@ -25,10 +24,11 @@ write_csv(data,"big.csv")
 ```
 
 ```{python}
-
 import polars as pl
-
 import polars.selectors as cs
+from datetime import datetime
+
+start=datetime.now()
 
 q=(
     pl.scan_csv("big.csv")
@@ -39,5 +39,54 @@ q=(
 
 table=q.collect()
 
-print(table.height)
+elapsed=datetime.now()-start
+
+print(f"{table.height} rows returned\nelapsed time for query: {elapsed}")
+```
+
+```{r}
+library(tidyverse)
+
+start=Sys.time()
+
+rows<-data.table::fread("big.csv") %>%
+  group_by(id) %>%
+  summarize(across(where(is.double),mean),.groups="keep") %>%
+  filter(if_any(where(is.double),~.x>.4)) %>%
+  nrow()
+
+elapsed=Sys.time()-start
+
+print(str_glue("{rows} rows returned\nelapsed time for query: {elapsed}"))
+
+library(dtplyr,warn.conflicts=F)
+
+start_dt=Sys.time()
+
+big<-data.table::fread("big.csv")
+
+assign("varnames",setdiff(colnames(big),"id"))
+
+rows_dt<-lazy_dt(big) %>%
+  group_by(id) %>%
+  summarize(across(all_of(varnames),mean),.groups="keep") %>%
+  filter(if_any(all_of(varnames),~.x>.4)) %>%
+  collect() %>%
+  nrow()
+
+elapsed_dt=Sys.time()-start_dt
+
+print(str_glue("{rows_dt} rows returned\nelapsed time for query: {elapsed_dt}"))
+
+start_tt=Sys.time()
+
+rows_tt<-data.table::fread("big.csv") %>%
+  tidytable::group_by(id) %>%
+  tidytable::summarize(tidytable::across(where(is.double),mean),.groups="keep") %>%
+  tidytable::filter(tidytable::if_any(where(is.double),~.x>.4)) %>%
+  nrow()
+
+elapsed_tt=Sys.time()-start_tt
+
+print(str_glue("{rows_tt} rows returned\nelapsed time for query: {elapsed_tt}"))
 ```
