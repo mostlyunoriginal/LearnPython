@@ -8,11 +8,14 @@ format:
 author:
     - name: G. Lance Couzens
       email: gcouzens@rti.org  
+params:
+  rows: 1000000
+  cols: 1000
 ---
 
 Let's compare the compute time needed for an equivalent operation between `Python` and `R`. The operation is to:\
 
-1. ingest a largeish csv file with 1M records and 1,000 columns of random normal variates plus one `ID` column,
+1. ingest a largeish csv file with `r prettyNum(params$rows,big.mark=",")` records and `r prettyNum(params$cols,big.mark=",")` columns of random normal variates plus one `ID` column,
 2. group by `ID` (100 records per `ID`),
 3. summarize as mean for each double/float column,
 4. filter to `ID`s with any one or more double/float column with a `mean > 0.4`, and
@@ -26,8 +29,8 @@ In Python, we will use `polars` with lazy evaluation. In `R`, we will use `dplyr
 
 library(tidyverse)
 
-rows<-1000000
-cols<-100
+rows<-params$rows
+cols<-params$cols
 
 data<-matrix(rnorm(rows*cols),nrow=rows,ncol=cols,byrow=T) %>%
   as.data.frame() %>%
