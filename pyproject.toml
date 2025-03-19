@@ -1,0 +1,15 @@
+[project]
+name = "learnpython"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ipkernel",
+    "polars>=1.25.2",
+]
+
+[dependency-groups]
+dev = [
+    "ipkernel",
+]

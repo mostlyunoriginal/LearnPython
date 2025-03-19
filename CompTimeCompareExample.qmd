@@ -27,7 +27,7 @@ In Python, we will use `polars` with lazy evaluation. In `R`, we will use `dplyr
 library(tidyverse)
 
 rows<-1000000
-cols<-1000
+cols<-100
 
 data<-matrix(rnorm(rows*cols),nrow=rows,ncol=cols,byrow=T) %>%
   as.data.frame() %>%
