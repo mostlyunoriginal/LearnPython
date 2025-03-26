@@ -88,8 +88,6 @@ Without further ado, let's dive into some examples.
 
 Here, we take on a very simple and very common task: calculating the mean of a continuous variable (`mpg`) by the levels of a categorical variable (`cyl`).
 
-a change!!
-
 ### R Version
 
 The Tidy approach utilizes a pipeline comprised of the `mtcars` data frame and the `group_by()` and `summarize()` functions. Note that these functions take a data frame (or tibble) as the first argument, but prevailing style allows this to be passed implicitly (as is done here).

@@ -3164,6 +3164,7 @@ vertical-align: -.125em;
 <section id="example-1.-basic-summarize-without-generalization-across-variables" class="level2">
 <h2 class="anchored" data-anchor-id="example-1.-basic-summarize-without-generalization-across-variables">Example 1. Basic Summarize without Generalization across Variables</h2>
 <p>Here, we take on a very simple and very common task: calculating the mean of a continuous variable (<code>mpg</code>) by the levels of a categorical variable (<code>cyl</code>).</p>
+<p>a change!!</p>
 <section id="r-version" class="level3">
 <h3 class="anchored" data-anchor-id="r-version">R Version</h3>
 <p>The Tidy approach utilizes a pipeline comprised of the <code>mtcars</code> data frame and the <code>group_by()</code> and <code>summarize()</code> functions. Note that these functions take a data frame (or tibble) as the first argument, but prevailing style allows this to be passed implicitly (as is done here).</p>
@@ -3209,9 +3210,9 @@ vertical-align: -.125em;
 │ --- ┆ ---       │
 │ f64 ┆ f64       │
 ╞═════╪═══════════╡
-│ 6.0 ┆ 19.742857 │
-│ 8.0 ┆ 15.1      │
 │ 4.0 ┆ 26.663636 │
+│ 8.0 ┆ 15.1      │
+│ 6.0 ┆ 19.742857 │
 └─────┴───────────┘</code></pre>
 </div>
 </div>
@@ -3344,13 +3345,13 @@ argument.</code></pre>
 │ --- ┆ ---  ┆ ---      ┆ ---        ┆   ┆ ---       ┆ ---     ┆ ---     ┆ ---       │
 │ f64 ┆ f64  ┆ f64      ┆ f64        ┆   ┆ f64       ┆ f64     ┆ f64     ┆ f64       │
 ╞═════╪══════╪══════════╪════════════╪═══╪═══════════╪═════════╪═════════╪═══════════╡
-│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
-│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
+│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
 │ 4.0 ┆ 3.0  ┆ 21.5     ┆ 120.1      ┆ … ┆ 20.01     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
+│ 8.0 ┆ 3.0  ┆ 15.05    ┆ 357.616667 ┆ … ┆ 17.1425   ┆ 0.0     ┆ 0.0     ┆ 3.083333  │
 │ 4.0 ┆ 4.0  ┆ 26.925   ┆ 102.625    ┆ … ┆ 19.6125   ┆ 1.0     ┆ 0.75    ┆ 1.5       │
 │ 4.0 ┆ 5.0  ┆ 28.2     ┆ 107.7      ┆ … ┆ 16.8      ┆ 0.5     ┆ 1.0     ┆ 2.0       │
 │ 8.0 ┆ 5.0  ┆ 15.4     ┆ 326.0      ┆ … ┆ 14.55     ┆ 0.0     ┆ 1.0     ┆ 6.0       │
-│ 6.0 ┆ 5.0  ┆ 19.7     ┆ 145.0      ┆ … ┆ 15.5      ┆ 0.0     ┆ 1.0     ┆ 6.0       │
+│ 6.0 ┆ 4.0  ┆ 19.75    ┆ 163.8      ┆ … ┆ 17.67     ┆ 0.5     ┆ 0.5     ┆ 4.0       │
 │ 6.0 ┆ 3.0  ┆ 19.75    ┆ 241.5      ┆ … ┆ 19.83     ┆ 1.0     ┆ 0.0     ┆ 1.0       │
 └─────┴──────┴──────────┴────────────┴───┴───────────┴─────────┴─────────┴───────────┘</code></pre>
 </div>
@@ -3811,10 +3812,10 @@ Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4     bad<
 │ Merc 230       ┆ null ┆ 95   │
 │ Fiat 128       ┆ null ┆ 66   │
 │ …              ┆ …    ┆ …    │
+│ Ferrari Dino   ┆ 6    ┆ null │
+│ Mazda RX4 Wag  ┆ 6    ┆ null │
 │ Mazda RX4      ┆ 6    ┆ null │
 │ Merc 280C      ┆ 6    ┆ null │
-│ Merc 280       ┆ 6    ┆ null │
-│ Ferrari Dino   ┆ 6    ┆ null │
 │ Hornet 4 Drive ┆ 6    ┆ null │
 └────────────────┴──────┴──────┘</code></pre>
 </div>
@@ -4309,23 +4310,23 @@ Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</code></
 <span id="cb88-24"><a href="#cb88-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (32, 12)
-┌────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
-│                ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
-│ ---            ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
-│ str            ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
-╞════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
-│ Ferrari Dino   ┆ 19.7 ┆ 6   ┆ 145.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 6    │
-│ Porsche 914-2  ┆ 26.0 ┆ 4   ┆ 120.3 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 2    │
-│ Lotus Europa   ┆ 30.4 ┆ 4   ┆ 95.1  ┆ … ┆ 1   ┆ 1   ┆ 5    ┆ 2    │
-│ Datsun 710     ┆ 22.8 ┆ 4   ┆ 108.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
-│ Merc 240D      ┆ 24.4 ┆ 4   ┆ 146.7 ┆ … ┆ 1   ┆ 0   ┆ 4    ┆ 2    │
-│ …              ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
-│ Toyota Corona  ┆ 21.5 ┆ 4   ┆ 120.1 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Ford Pantera L ┆ 15.8 ┆ 8   ┆ 351.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 4    │
-│ Maserati Bora  ┆ 15.0 ┆ 8   ┆ 301.0 ┆ … ┆ 0   ┆ 1   ┆ 5    ┆ 8    │
-│ Hornet 4 Drive ┆ 21.4 ┆ 6   ┆ 258.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-│ Valiant        ┆ 18.1 ┆ 6   ┆ 225.0 ┆ … ┆ 1   ┆ 0   ┆ 3    ┆ 1    │
-└────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
+┌───────────────────┬──────┬─────┬───────┬───┬─────┬─────┬──────┬──────┐
+│                   ┆ mpg  ┆ cyl ┆ disp  ┆ … ┆ vs  ┆ am  ┆ gear ┆ carb │
+│ ---               ┆ ---  ┆ --- ┆ ---   ┆   ┆ --- ┆ --- ┆ ---  ┆ ---  │
+│ str               ┆ f64  ┆ i64 ┆ f64   ┆   ┆ i64 ┆ i64 ┆ i64  ┆ i64  │
+╞═══════════════════╪══════╪═════╪═══════╪═══╪═════╪═════╪══════╪══════╡
+│ Hornet Sportabout ┆ 18.7 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 2    │
+│ Duster 360        ┆ 14.3 ┆ 8   ┆ 360.0 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 4    │
+│ Merc 450SE        ┆ 16.4 ┆ 8   ┆ 275.8 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 3    │
+│ Merc 450SL        ┆ 17.3 ┆ 8   ┆ 275.8 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 3    │
+│ Merc 450SLC       ┆ 15.2 ┆ 8   ┆ 275.8 ┆ … ┆ 0   ┆ 0   ┆ 3    ┆ 3    │
+│ …                 ┆ …    ┆ …   ┆ …     ┆ … ┆ …   ┆ …   ┆ …    ┆ …    │
+│ Fiat 128          ┆ 32.4 ┆ 4   ┆ 78.7  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Honda Civic       ┆ 30.4 ┆ 4   ┆ 75.7  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
+│ Toyota Corolla    ┆ 33.9 ┆ 4   ┆ 71.1  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Fiat X1-9         ┆ 27.3 ┆ 4   ┆ 79.0  ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 1    │
+│ Volvo 142E        ┆ 21.4 ┆ 4   ┆ 121.0 ┆ … ┆ 1   ┆ 1   ┆ 4    ┆ 2    │
+└───────────────────┴──────┴─────┴───────┴───┴─────┴─────┴──────┴──────┘</code></pre>
 </div>
 </div>
 </section>
